@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Alert, Spinner, Button } from "react-bootstrap";
 import TimeEntryRow from "./TimeEntryRow.jsx";
+import { useUser } from "../contexts/UserContext";
 /*
   Requirements:
   - Ensure Bootstrap CSS is loaded globally, e.g. in main.jsx:
@@ -59,6 +60,7 @@ const userWithTimeEntries = {
 */
 
 const TimeEntriesList = () => {
+  const { currentUserId } = useUser();
   const [timeEntries, setTimeEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -67,7 +69,7 @@ const TimeEntriesList = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch("https://localhost:7201/api/user/1/timeentries");
+      const response = await fetch(`https://localhost:7201/api/user/${currentUserId}/timeentries`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -84,8 +86,10 @@ const TimeEntriesList = () => {
   };
 
   useEffect(() => {
-    fetchUserWithTimeEntries();
-  }, []);
+    if (currentUserId) {
+      fetchUserWithTimeEntries();
+    }
+  }, [currentUserId]);
 
 
   // Show loading spinner

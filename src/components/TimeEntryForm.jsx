@@ -1,13 +1,19 @@
-import React, { useState } from 'react';
-import { Container, Card, Row, Col, Form, Button } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Container, Card, Row, Col, Form, Button, Spinner } from 'react-bootstrap';
+import { useUser } from '../contexts/UserContext';
 
 const TimeEntryForm = () => {
+  const { currentUserId } = useUser();
   const [formData, setFormData] = useState({
-    project: 'Website Redesign',
+    project: '',
     segment: 'Development',
     startTime: '',
     endTime: ''
   });
+  
+  const [projects, setProjects] = useState([]);
+  const [loadingProjects, setLoadingProjects] = useState(true);
+  const [projectsError, setProjectsError] = useState(null);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -16,6 +22,40 @@ const TimeEntryForm = () => {
       [name]: value
     }));
   };
+
+  const fetchUserProjects = async () => {
+    try {
+      setLoadingProjects(true);
+      setProjectsError(null);
+      const response = await fetch(`https://localhost:7201/api/user/${currentUserId}/projects`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const userWithProjects = await response.json();
+      setProjects(userWithProjects.projects || []);
+      
+      // Set first project as default if available
+      if (userWithProjects.projects && userWithProjects.projects.length > 0) {
+        setFormData(prev => ({
+          ...prev,
+          project: userWithProjects.projects[0].id.toString()
+        }));
+      }
+    } catch (err) {
+      console.error('Failed to fetch projects:', err);
+      setProjectsError(err.message);
+    } finally {
+      setLoadingProjects(false);
+    }
+  };
+
+  useEffect(() => {
+    if (currentUserId) {
+      fetchUserProjects();
+    }
+  }, [currentUserId]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -43,12 +83,31 @@ const TimeEntryForm = () => {
                       value={formData.project}
                       onChange={handleInputChange}
                       size="lg"
+                      disabled={loadingProjects}
                     >
-                      <option value="Website Redesign">Website Redesign</option>
-                      <option value="Mobile App Development">Mobile App Development</option>
-                      <option value="Marketing Campaign">Marketing Campaign</option>
-                      <option value="Backend API">Backend API</option>
+                      {loadingProjects ? (
+                        <option>Loading projects...</option>
+                      ) : projectsError ? (
+                        <option>Error loading projects</option>
+                      ) : projects.length === 0 ? (
+                        <option>No projects available</option>
+                      ) : (
+                        <>
+                          <option value="">Select a project</option>
+                          {projects.map(project => (
+                            <option key={project.id} value={project.id}>
+                              {project.code} - {project.description}
+                            </option>
+                          ))}
+                        </>
+                      )}
                     </Form.Select>
+                    {loadingProjects && (
+                      <div className="mt-1">
+                        <Spinner animation="border" size="sm" variant="primary" />
+                        <span className="ms-2 text-muted small">Loading projects...</span>
+                      </div>
+                    )}
                   </Form.Group>
                 </Col>
 
