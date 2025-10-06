@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Card, Row, Col, Form, Button, Spinner } from 'react-bootstrap';
+import { Container, Card, Row, Col, Form, Button, Spinner, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { useUser } from '../contexts/UserContext';
 
 const TimeEntryForm = () => {
@@ -25,6 +25,46 @@ const TimeEntryForm = () => {
       ...prev,
       [name]: value
     }));
+  };
+
+  // Validation functions
+  const validateTimeRange = () => {
+    if (!formData.startTime || !formData.endTime) {
+      return { isValid: false, message: '' };
+    }
+    
+    const startTime = new Date(`2025-01-01T${formData.startTime}`);
+    const endTime = new Date(`2025-01-01T${formData.endTime}`);
+    
+    if (endTime <= startTime) {
+      return { isValid: false, message: 'End time must be after start time' };
+    }
+    
+    return { isValid: true, message: '' };
+  };
+
+  const isFormValid = () => {
+    const hasProject = formData.project !== '';
+    const hasSegment = formData.segment !== '';
+    const hasStartTime = formData.startTime !== '';
+    const hasEndTime = formData.endTime !== '';
+    const timeRangeValid = validateTimeRange().isValid;
+    
+    return hasProject && hasSegment && hasStartTime && hasEndTime && timeRangeValid;
+  };
+
+  const getValidationMessage = () => {
+    if (!formData.project) return 'Please select a project';
+    if (!formData.segment) return 'Please select a segment';
+    if (!formData.startTime) return 'Please enter a start time';
+    if (!formData.endTime) return 'Please enter an end time';
+    
+    const timeValidation = validateTimeRange();
+    if (!timeValidation.isValid && timeValidation.message) {
+      return timeValidation.message;
+    }
+    
+    return '';
   };
 
   const fetchUserProjects = async () => {
@@ -109,7 +149,7 @@ const TimeEntryForm = () => {
                 <Col md={3}>
                   <Form.Group>
                     <Form.Label className="fw-medium text-muted small">
-                      Project
+                      Project <span className="text-danger">*</span>
                     </Form.Label>
                     <Form.Select
                       name="project"
@@ -117,6 +157,8 @@ const TimeEntryForm = () => {
                       onChange={handleInputChange}
                       size="lg"
                       disabled={loadingProjects}
+                      isInvalid={formData.project === ''}
+                      required
                     >
                       {loadingProjects ? (
                         <option>Loading projects...</option>
@@ -148,7 +190,7 @@ const TimeEntryForm = () => {
                 <Col md={3}>
                   <Form.Group>
                     <Form.Label className="fw-medium text-muted small">
-                      Segment
+                      Segment <span className="text-danger">*</span>
                     </Form.Label>
                     <Form.Select
                       name="segment"
@@ -156,6 +198,8 @@ const TimeEntryForm = () => {
                       onChange={handleInputChange}
                       size="lg"
                       disabled={loadingSegmentTypes}
+                      isInvalid={formData.segment === ''}
+                      required
                     >
                       {loadingSegmentTypes ? (
                         <option>Loading segments...</option>
@@ -187,7 +231,7 @@ const TimeEntryForm = () => {
                 <Col md={2}>
                   <Form.Group>
                     <Form.Label className="fw-medium text-muted small">
-                      Start Time
+                      Start Time <span className="text-danger">*</span>
                     </Form.Label>
                     <Form.Control
                       type="time"
@@ -195,6 +239,7 @@ const TimeEntryForm = () => {
                       value={formData.startTime}
                       onChange={handleInputChange}
                       size="lg"
+                      isInvalid={formData.startTime && formData.endTime && !validateTimeRange().isValid}
                     />
                   </Form.Group>
                 </Col>
@@ -203,7 +248,7 @@ const TimeEntryForm = () => {
                 <Col md={2}>
                   <Form.Group>
                     <Form.Label className="fw-medium text-muted small">
-                      End Time
+                      End Time <span className="text-danger">*</span>
                     </Form.Label>
                     <Form.Control
                       type="time"
@@ -211,21 +256,51 @@ const TimeEntryForm = () => {
                       value={formData.endTime}
                       onChange={handleInputChange}
                       size="lg"
+                      isInvalid={formData.startTime && formData.endTime && !validateTimeRange().isValid}
                     />
+                    {formData.startTime && formData.endTime && !validateTimeRange().isValid && (
+                      <Form.Control.Feedback type="invalid" className="small">
+                        {validateTimeRange().message}
+                      </Form.Control.Feedback>
+                    )}
                   </Form.Group>
                 </Col>
 
                 {/* Add Button */}
                 <Col md={2}>
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    size="lg"
-                    className="w-100 d-flex align-items-center justify-content-center gap-2 py-3"
-                  >
-                    <i className="bi bi-plus-lg"></i>
-                    Add
-                  </Button>
+                  {!isFormValid() ? (
+                    <OverlayTrigger
+                      placement="top"
+                      overlay={
+                        <Tooltip id="validation-tooltip">
+                          {getValidationMessage()}
+                        </Tooltip>
+                      }
+                    >
+                      <div className="w-100">
+                        <Button
+                          type="submit"
+                          variant="primary"
+                          size="lg"
+                          disabled={true}
+                          className="w-100 d-flex align-items-center justify-content-center gap-2 py-3"
+                        >
+                          <i className="bi bi-plus-lg"></i>
+                          Add
+                        </Button>
+                      </div>
+                    </OverlayTrigger>
+                  ) : (
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      size="lg"
+                      className="w-100 d-flex align-items-center justify-content-center gap-2 py-3"
+                    >
+                      <i className="bi bi-plus-lg"></i>
+                      Add
+                    </Button>
+                  )}
                 </Col>
               </Row>
             </Form>
