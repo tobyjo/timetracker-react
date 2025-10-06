@@ -1,0 +1,19 @@
+/* Minimal reset for full-screen layout */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #f8f9fa;
+}
+
+#root {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.App {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
