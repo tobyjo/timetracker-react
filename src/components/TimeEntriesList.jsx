@@ -134,13 +134,9 @@ const TimeEntriesList = () => {
   }
 
   return (
-    <main className="container-xl py-4">
-      <div className="d-flex justify-content-between align-items-center mb-4">
+    <main className="container-xl py-0 pb-4">
+      <div className="mb-4">
         <h2 className="display-6 fw-bold mb-0">Today's Time Entries</h2>
-        <button className="btn btn-primary d-inline-flex align-items-center gap-2 px-4 py-2 rounded-3 fw-semibold" type="button">
-          <i className="bi bi-plus-lg"></i>
-          New Time Entry
-        </button>
       </div>
       
       {timeEntries.length === 0 ? (
