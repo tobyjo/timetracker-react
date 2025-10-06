@@ -6,7 +6,7 @@ const TimeEntryForm = () => {
   const { currentUserId } = useUser();
   const [formData, setFormData] = useState({
     project: '',
-    segment: 'Development',
+    segment: '',
     startTime: '',
     endTime: ''
   });
@@ -14,6 +14,10 @@ const TimeEntryForm = () => {
   const [projects, setProjects] = useState([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [projectsError, setProjectsError] = useState(null);
+  
+  const [segmentTypes, setSegmentTypes] = useState([]);
+  const [loadingSegmentTypes, setLoadingSegmentTypes] = useState(true);
+  const [segmentTypesError, setSegmentTypesError] = useState(null);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -51,9 +55,38 @@ const TimeEntryForm = () => {
     }
   };
 
+  const fetchUserSegmentTypes = async () => {
+    try {
+      setLoadingSegmentTypes(true);
+      setSegmentTypesError(null);
+      const response = await fetch(`https://localhost:7201/api/user/${currentUserId}/segmenttypes`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const userWithSegmentTypes = await response.json();
+      setSegmentTypes(userWithSegmentTypes.segmentTypes || []);
+      
+      // Set first segment type as default if available
+      if (userWithSegmentTypes.segmentTypes && userWithSegmentTypes.segmentTypes.length > 0) {
+        setFormData(prev => ({
+          ...prev,
+          segment: userWithSegmentTypes.segmentTypes[0].id.toString()
+        }));
+      }
+    } catch (err) {
+      console.error('Failed to fetch segment types:', err);
+      setSegmentTypesError(err.message);
+    } finally {
+      setLoadingSegmentTypes(false);
+    }
+  };
+
   useEffect(() => {
     if (currentUserId) {
       fetchUserProjects();
+      fetchUserSegmentTypes();
     }
   }, [currentUserId]);
 
@@ -122,13 +155,31 @@ const TimeEntryForm = () => {
                       value={formData.segment}
                       onChange={handleInputChange}
                       size="lg"
+                      disabled={loadingSegmentTypes}
                     >
-                      <option value="Development">Development</option>
-                      <option value="Meeting">Meeting</option>
-                      <option value="Planning">Planning</option>
-                      <option value="Testing">Testing</option>
-                      <option value="Design">Design</option>
+                      {loadingSegmentTypes ? (
+                        <option>Loading segments...</option>
+                      ) : segmentTypesError ? (
+                        <option>Error loading segments</option>
+                      ) : segmentTypes.length === 0 ? (
+                        <option>No segments available</option>
+                      ) : (
+                        <>
+                          <option value="">Select a segment</option>
+                          {segmentTypes.map(segmentType => (
+                            <option key={segmentType.id} value={segmentType.id}>
+                              {segmentType.name}
+                            </option>
+                          ))}
+                        </>
+                      )}
                     </Form.Select>
+                    {loadingSegmentTypes && (
+                      <div className="mt-1">
+                        <Spinner animation="border" size="sm" variant="primary" />
+                        <span className="ms-2 text-muted small">Loading segments...</span>
+                      </div>
+                    )}
                   </Form.Group>
                 </Col>
 
