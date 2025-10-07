@@ -177,12 +177,15 @@ const TimeEntryForm = () => {
                         </>
                       )}
                     </Form.Select>
-                    {loadingProjects && (
-                      <div className="mt-1">
-                        <Spinner animation="border" size="sm" variant="primary" />
-                        <span className="ms-2 text-muted small">Loading projects...</span>
-                      </div>
-                    )}
+                    {/* Reserved space for consistent alignment */}
+                    <div style={{ height: '1.25rem' }}>
+                      {loadingProjects && (
+                        <div className="mt-1">
+                          <Spinner animation="border" size="sm" variant="primary" />
+                          <span className="ms-2 text-muted small">Loading projects...</span>
+                        </div>
+                      )}
+                    </div>
                   </Form.Group>
                 </Col>
 
@@ -218,12 +221,15 @@ const TimeEntryForm = () => {
                         </>
                       )}
                     </Form.Select>
-                    {loadingSegmentTypes && (
-                      <div className="mt-1">
-                        <Spinner animation="border" size="sm" variant="primary" />
-                        <span className="ms-2 text-muted small">Loading segments...</span>
-                      </div>
-                    )}
+                    {/* Reserved space for consistent alignment */}
+                    <div style={{ height: '1.25rem' }}>
+                      {loadingSegmentTypes && (
+                        <div className="mt-1">
+                          <Spinner animation="border" size="sm" variant="primary" />
+                          <span className="ms-2 text-muted small">Loading segments...</span>
+                        </div>
+                      )}
+                    </div>
                   </Form.Group>
                 </Col>
 
@@ -241,6 +247,10 @@ const TimeEntryForm = () => {
                       size="lg"
                       isInvalid={formData.startTime && formData.endTime && !validateTimeRange().isValid}
                     />
+                    {/* Reserved space for consistent alignment */}
+                    <div style={{ height: '1.25rem' }}>
+                      {/* Empty space to maintain layout consistency */}
+                    </div>
                   </Form.Group>
                 </Col>
 
@@ -258,49 +268,61 @@ const TimeEntryForm = () => {
                       size="lg"
                       isInvalid={formData.startTime && formData.endTime && !validateTimeRange().isValid}
                     />
-                    {formData.startTime && formData.endTime && !validateTimeRange().isValid && (
-                      <Form.Control.Feedback type="invalid" className="small">
-                        {validateTimeRange().message}
-                      </Form.Control.Feedback>
-                    )}
+                    {/* Reserved space for error message - always present to prevent layout shift */}
+                    <div className="small text-danger" style={{ height: '1.25rem', lineHeight: '1.25rem' }}>
+                      {formData.startTime && formData.endTime && !validateTimeRange().isValid 
+                        ? validateTimeRange().message 
+                        : '\u00A0'} {/* Non-breaking space to maintain height */}
+                    </div>
                   </Form.Group>
                 </Col>
 
                 {/* Add Button */}
                 <Col md={2}>
-                  {!isFormValid() ? (
-                    <OverlayTrigger
-                      placement="top"
-                      overlay={
-                        <Tooltip id="validation-tooltip">
-                          {getValidationMessage()}
-                        </Tooltip>
-                      }
-                    >
-                      <div className="w-100">
-                        <Button
-                          type="submit"
-                          variant="primary"
-                          size="lg"
-                          disabled={true}
-                          className="w-100 d-flex align-items-center justify-content-center gap-2 py-3"
-                        >
-                          <i className="bi bi-plus-lg"></i>
-                          Add
-                        </Button>
-                      </div>
-                    </OverlayTrigger>
-                  ) : (
-                    <Button
-                      type="submit"
-                      variant="primary"
-                      size="lg"
-                      className="w-100 d-flex align-items-center justify-content-center gap-2 py-3"
-                    >
-                      <i className="bi bi-plus-lg"></i>
-                      Add
-                    </Button>
-                  )}
+                  <Form.Group>
+                    <Form.Label className="fw-medium text-muted small">
+                      &nbsp;
+                    </Form.Label>
+                    {!isFormValid() ? (
+                      <OverlayTrigger
+                        placement="top"
+                        overlay={
+                          <Tooltip id="validation-tooltip">
+                            {getValidationMessage()}
+                          </Tooltip>
+                        }
+                      >
+                        <div className="w-100">
+                          <Button
+                            type="submit"
+                            variant="primary"
+                            size="lg"
+                            disabled={true}
+                            className="w-100 d-flex align-items-center justify-content-center gap-2"
+                            style={{ height: '48px' }}
+                          >
+                            <i className="bi bi-plus-lg"></i>
+                            Add
+                          </Button>
+                        </div>
+                      </OverlayTrigger>
+                    ) : (
+                      <Button
+                        type="submit"
+                        variant="primary"
+                        size="lg"
+                        className="w-100 d-flex align-items-center justify-content-center gap-2"
+                        style={{ height: '48px' }}
+                      >
+                        <i className="bi bi-plus-lg"></i>
+                        Add
+                      </Button>
+                    )}
+                    {/* Reserved space for consistent alignment */}
+                    <div style={{ height: '1.25rem' }}>
+                      {/* Empty space to maintain layout consistency */}
+                    </div>
+                  </Form.Group>
                 </Col>
               </Row>
             </Form>
