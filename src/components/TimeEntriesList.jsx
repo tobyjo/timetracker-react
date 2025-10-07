@@ -59,7 +59,7 @@ const userWithTimeEntries = {
 };
 */
 
-const TimeEntriesList = () => {
+const TimeEntriesList = ({ selectedDate }) => {
   const { currentUserId } = useUser();
   const [timeEntries, setTimeEntries] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -69,7 +69,21 @@ const TimeEntriesList = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch(`https://localhost:7201/api/user/${currentUserId}/timeentries`);
+      
+      // Create start and end datetime for the selected date
+      const startDateTime = new Date(selectedDate);
+      startDateTime.setHours(0, 0, 0, 0); // Start of day
+      
+      const endDateTime = new Date(selectedDate);
+      endDateTime.setHours(23, 59, 59, 999); // End of day
+      
+      // Format dates for API (ISO string format)
+      const startParam = startDateTime.toISOString();
+      const endParam = endDateTime.toISOString();
+      
+      const response = await fetch(
+        `https://localhost:7201/api/user/${currentUserId}/timeentries?startDateTime=${encodeURIComponent(startParam)}&endDateTime=${encodeURIComponent(endParam)}`
+      );
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -86,10 +100,10 @@ const TimeEntriesList = () => {
   };
 
   useEffect(() => {
-    if (currentUserId) {
+    if (currentUserId && selectedDate) {
       fetchUserWithTimeEntries();
     }
-  }, [currentUserId]);
+  }, [currentUserId, selectedDate]);
 
 
   // Show loading spinner
@@ -140,13 +154,13 @@ const TimeEntriesList = () => {
   return (
     <main className="container-xl py-0 pb-4">
       <div className="mb-4">
-        <h2 className="display-6 fw-bold mb-0">Today's Time Entries</h2>
+        <h2 className="display-6 fw-bold mb-0">Time Entries</h2>
       </div>
       
       {timeEntries.length === 0 ? (
         <Alert variant="info" className="text-center">
           <i className="bi bi-info-circle me-2"></i>
-          No time entries found for today.
+          No time entries found for the selected date.
         </Alert>
       ) : (
         <div className="table-responsive">

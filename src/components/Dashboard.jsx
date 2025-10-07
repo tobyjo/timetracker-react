@@ -2,18 +2,28 @@ import React, { useState } from 'react';
 import { Container, Nav } from 'react-bootstrap';
 import TimeEntryForm from './TimeEntryForm';
 import TimeEntriesList from './TimeEntriesList';
+import DayNavigation from './DayNavigation';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('day');
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   const handleTabSelect = (tab) => {
     setActiveTab(tab);
   };
 
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
+  };
+
   const renderDayView = () => (
     <>
-      <TimeEntryForm />
-      <TimeEntriesList />
+      <DayNavigation 
+        currentDate={selectedDate} 
+        onDateChange={handleDateChange} 
+      />
+      <TimeEntryForm selectedDate={selectedDate} />
+      <TimeEntriesList selectedDate={selectedDate} />
     </>
   );
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Card, Row, Col, Form, Button, Spinner, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { useUser } from '../contexts/UserContext';
 
-const TimeEntryForm = () => {
+const TimeEntryForm = ({ selectedDate }) => {
   const { currentUserId } = useUser();
   const [formData, setFormData] = useState({
     project: '',
