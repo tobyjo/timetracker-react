@@ -1,12 +1,68 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Container, Nav } from 'react-bootstrap';
 import TimeEntryForm from './TimeEntryForm';
 import TimeEntriesList from './TimeEntriesList';
 
 const Dashboard = () => {
-  return (
+  const [activeTab, setActiveTab] = useState('day');
+
+  const handleTabSelect = (tab) => {
+    setActiveTab(tab);
+  };
+
+  const renderDayView = () => (
     <>
       <TimeEntryForm />
       <TimeEntriesList />
+    </>
+  );
+
+  const renderWeekView = () => (
+    <Container fluid className="py-4">
+      <Container>
+        <div className="text-center py-5">
+          <h3 className="text-muted mb-3">Weekly View</h3>
+          <p className="text-muted">Week view functionality coming soon...</p>
+        </div>
+      </Container>
+    </Container>
+  );
+
+  return (
+    <>
+      {/* Tab Navigation */}
+      <Container fluid className="border-bottom bg-light">
+        <Container>
+          <Nav variant="tabs" className="border-0">
+            <Nav.Item>
+              <Nav.Link 
+                active={activeTab === 'day'}
+                onClick={() => handleTabSelect('day')}
+                className={`px-4 py-3 ${activeTab === 'day' ? 'border-bottom-0' : ''}`}
+                style={{ cursor: 'pointer' }}
+              >
+                <i className="bi bi-calendar-day me-2"></i>
+                Day
+              </Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link 
+                active={activeTab === 'week'}
+                onClick={() => handleTabSelect('week')}
+                className={`px-4 py-3 ${activeTab === 'week' ? 'border-bottom-0' : ''}`}
+                style={{ cursor: 'pointer' }}
+              >
+                <i className="bi bi-calendar-week me-2"></i>
+                Week
+              </Nav.Link>
+            </Nav.Item>
+          </Nav>
+        </Container>
+      </Container>
+
+      {/* Tab Content */}
+      {activeTab === 'day' && renderDayView()}
+      {activeTab === 'week' && renderWeekView()}
     </>
   );
 };
