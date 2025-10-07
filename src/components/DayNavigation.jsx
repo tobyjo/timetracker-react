@@ -42,56 +42,44 @@ const DayNavigation = ({ currentDate, onDateChange }) => {
   return (
     <Container fluid className="py-4">
       <Container>
-        <Card className="border-0 shadow-sm mb-4">
-          <Card.Body className="p-4">
-            <Row className="align-items-center">
-              <Col>
-                <h2 className="mb-1 fw-bold">Daily Entries</h2>
-                <p className="text-muted mb-0">Track your time across projects and tasks for a specific day.</p>
-              </Col>
-              <Col xs="auto">
-                <div className="d-flex align-items-center gap-3">
-                  {/* Previous Day Button */}
-                  <Button
-                    variant="outline-secondary"
-                    size="sm"
-                    onClick={handlePreviousDay}
-                    className="d-flex align-items-center"
-                  >
-                    <i className="bi bi-chevron-left"></i>
-                    <span className="d-none d-sm-inline ms-1">Previous</span>
-                  </Button>
+        <div className="d-flex align-items-center justify-content-center gap-3 mb-4">
+          {/* Previous Day Button */}
+          <Button
+            variant="outline-secondary"
+            size="sm"
+            onClick={handlePreviousDay}
+            className="d-flex align-items-center"
+          >
+            <i className="bi bi-chevron-left"></i>
+            <span className="d-none d-sm-inline ms-1">Previous</span>
+          </Button>
 
-                  {/* Date Display */}
-                  <div className="text-center px-3">
-                    <h4 className="mb-0 fw-bold">{formatDateDisplay(currentDate)}</h4>
-                  </div>
+          {/* Date Display */}
+          <div className="text-center px-4">
+            <h4 className="mb-0 fw-bold">{formatDateDisplay(currentDate)}</h4>
+          </div>
 
-                  {/* Today Button */}
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={handleToday}
-                    className="d-flex align-items-center"
-                  >
-                    <span>Today</span>
-                  </Button>
+          {/* Today Button */}
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={handleToday}
+            className="d-flex align-items-center"
+          >
+            <span>Today</span>
+          </Button>
 
-                  {/* Next Day Button */}
-                  <Button
-                    variant="outline-secondary"
-                    size="sm"
-                    onClick={handleNextDay}
-                    className="d-flex align-items-center"
-                  >
-                    <span className="d-none d-sm-inline me-1">Next</span>
-                    <i className="bi bi-chevron-right"></i>
-                  </Button>
-                </div>
-              </Col>
-            </Row>
-          </Card.Body>
-        </Card>
+          {/* Next Day Button */}
+          <Button
+            variant="outline-secondary"
+            size="sm"
+            onClick={handleNextDay}
+            className="d-flex align-items-center"
+          >
+            <span className="d-none d-sm-inline me-1">Next</span>
+            <i className="bi bi-chevron-right"></i>
+          </Button>
+        </div>
       </Container>
     </Container>
   );

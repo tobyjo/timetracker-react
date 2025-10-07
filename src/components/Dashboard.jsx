@@ -40,6 +40,16 @@ const Dashboard = () => {
 
   return (
     <>
+      {/* Page Header */}
+      <Container fluid className="py-4">
+        <Container>
+          <div className="mb-4">
+            <h1 className="mb-1 fw-bold">Daily Entries</h1>
+            <p className="text-muted mb-0">Track your time across projects and tasks for a specific day.</p>
+          </div>
+        </Container>
+      </Container>
+
       {/* Tab Navigation */}
       <Container fluid className="border-bottom bg-light">
         <Container>
