@@ -40,9 +40,9 @@ const DayNavigation = ({ currentDate, onDateChange }) => {
   };
 
   return (
-    <Container fluid className="py-4">
+    <Container fluid className="pt-4 pb-2">
       <Container>
-        <div className="d-flex align-items-center justify-content-center gap-3 mb-4">
+        <div className="d-flex align-items-center justify-content-center gap-3">
           {/* Previous Day Button */}
           <Button
             variant="outline-secondary"

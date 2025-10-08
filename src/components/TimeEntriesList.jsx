@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Alert, Spinner, Button } from "react-bootstrap";
+import { Alert, Spinner, Button, Card, Container } from "react-bootstrap";
 import TimeEntryRow from "./TimeEntryRow.jsx";
 import { useUser } from "../contexts/UserContext";
 /*
@@ -105,85 +105,96 @@ const TimeEntriesList = ({ selectedDate }) => {
     }
   }, [currentUserId, selectedDate]);
 
-
   // Show loading spinner
   if (loading) {
     return (
-      <main className="container-xl py-4">
-        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '300px' }}>
-          <div className="text-center">
-            <Spinner animation="border" variant="primary" className="mb-3" />
-            <p className="text-muted">Loading time entries...</p>
+      <Container fluid className="py-4">
+        <Container>
+          <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '300px' }}>
+            <div className="text-center">
+              <Spinner animation="border" variant="primary" className="mb-3" />
+              <p className="text-muted">Loading time entries...</p>
+            </div>
           </div>
-        </div>
-      </main>
+        </Container>
+      </Container>
     );
   }
 
   // Show error message
   if (error) {
     return (
-      <main className="container-xl py-4">
-        <Alert variant="danger" className="mb-4">
-          <Alert.Heading className="d-flex align-items-center gap-2">
-            <i className="bi bi-exclamation-triangle-fill"></i>
-            Unable to Load Time Entries
-          </Alert.Heading>
-          <p className="mb-3">
-            There was a problem connecting to the server. Please check that the API is running and try again.
-          </p>
-          <p className="text-muted small mb-3">
-            <strong>Error:</strong> {error}
-          </p>
-          <hr />
-          <div className="d-flex gap-2 mb-0">
-            <Button variant="outline-danger" onClick={fetchUserWithTimeEntries}>
-              <i className="bi bi-arrow-clockwise me-2"></i>
-              Try Again
-            </Button>
-            <Button variant="outline-secondary" onClick={() => window.location.reload()}>
-              <i className="bi bi-arrow-repeat me-2"></i>
-              Refresh Page
-            </Button>
-          </div>
-        </Alert>
-      </main>
+      <Container fluid className="py-4">
+        <Container>
+          <Card className="border-0 shadow-sm mb-4">            
+            <Card.Body className="p-4">
+              <Alert variant="danger" className="mb-4">
+                <Alert.Heading className="d-flex align-items-center gap-2">
+                  <i className="bi bi-exclamation-triangle-fill"></i>
+                  Unable to Load Time Entries
+                </Alert.Heading>
+                <p className="mb-3">
+                  There was a problem connecting to the server. Please check that the API is running and try again.
+                </p>
+                <p className="text-muted small mb-3">
+                  <strong>Error:</strong> {error}
+                </p>
+                <hr />
+                <div className="d-flex gap-2 mb-0">
+                  <Button variant="outline-danger" onClick={fetchUserWithTimeEntries}>
+                    <i className="bi bi-arrow-clockwise me-2"></i>
+                    Try Again
+                  </Button>
+                  <Button variant="outline-secondary" onClick={() => window.location.reload()}>
+                    <i className="bi bi-arrow-repeat me-2"></i>
+                    Refresh Page
+                  </Button>
+                </div>
+              </Alert>
+            </Card.Body>
+          </Card>
+        </Container>
+      </Container>
     );
   }
 
   return (
-    <main className="container-xl py-0 pb-4">
-      <div className="mb-4">
-        <h2 className="display-6 fw-bold mb-0">Time Entries</h2>
-      </div>
-      
-      {timeEntries.length === 0 ? (
-        <Alert variant="info" className="text-center">
-          <i className="bi bi-info-circle me-2"></i>
-          No time entries found for the selected date.
-        </Alert>
-      ) : (
-        <div className="table-responsive">
-          <table className="table table-bordered rounded-3 overflow-hidden mb-0">
-            <thead className="table-light">
-              <tr>
-                <th scope="col" className="ps-4 text-start">Project</th>
-                <th scope="col">Segment</th>
-                <th scope="col">Time</th>
-                <th scope="col" className="text-end pe-4">
-                  <span className="visually-hidden">Edit</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {timeEntries.map(e => (
-                <TimeEntryRow key={e.id} timeEntry={e} />
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </main>
+    <Container fluid className="py-1">
+      <Container>
+        {timeEntries.length === 0 ? (
+          <Card className="border-0 shadow-sm mb-4">
+            <Card.Body className="p-4">
+              <Alert variant="info" className="text-center mb-0">
+                <i className="bi bi-info-circle me-2"></i>
+                No time entries found for the selected date.
+              </Alert>
+            </Card.Body>
+          </Card>
+        ) : (
+          <Card className="border-0 shadow-sm mb-4">
+            <div className="table-responsive">
+              <table className="table mb-0">
+                <thead className="table-light">
+                  <tr>
+                    <th scope="col" className="ps-4 text-start">Project</th>
+                    <th scope="col">Segment</th>
+                    <th scope="col">Time</th>
+                    <th scope="col" className="text-end pe-4">
+                      <span className="visually-hidden">Edit</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {timeEntries.map(e => (
+                    <TimeEntryRow key={e.id} timeEntry={e} />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        )}
+      </Container>
+    </Container>
   );
 }
 
