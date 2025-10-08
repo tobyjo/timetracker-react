@@ -7,6 +7,7 @@ import DayNavigation from './DayNavigation';
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('day');
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const handleTabSelect = (tab) => {
     setActiveTab(tab);
@@ -16,14 +17,25 @@ const Dashboard = () => {
     setSelectedDate(date);
   };
 
+  const handleEntryAdded = (newEntry) => {
+    // Force TimeEntriesList to refresh by changing the key
+    setRefreshKey(prev => prev + 1);
+  };
+
   const renderDayView = () => (
     <>
       <DayNavigation 
         currentDate={selectedDate} 
         onDateChange={handleDateChange} 
       />
-      <TimeEntryForm selectedDate={selectedDate} />
-      <TimeEntriesList selectedDate={selectedDate} />
+      <TimeEntryForm 
+        selectedDate={selectedDate} 
+        onEntryAdded={handleEntryAdded}
+      />
+      <TimeEntriesList 
+        key={refreshKey}
+        selectedDate={selectedDate} 
+      />
     </>
   );
 

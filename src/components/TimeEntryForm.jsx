@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Card, Row, Col, Form, Button, Spinner, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { Container, Card, Row, Col, Form, Button, Spinner, OverlayTrigger, Tooltip, Alert } from 'react-bootstrap';
 import { useUser } from '../contexts/UserContext';
 
-const TimeEntryForm = ({ selectedDate }) => {
+const TimeEntryForm = ({ selectedDate, onEntryAdded }) => {
   const { currentUserId } = useUser();
   const [formData, setFormData] = useState({
     project: '',
@@ -18,6 +18,9 @@ const TimeEntryForm = ({ selectedDate }) => {
   const [segmentTypes, setSegmentTypes] = useState([]);
   const [loadingSegmentTypes, setLoadingSegmentTypes] = useState(true);
   const [segmentTypesError, setSegmentTypesError] = useState(null);
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -130,10 +133,68 @@ const TimeEntryForm = ({ selectedDate }) => {
     }
   }, [currentUserId]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: Handle form submission
-    console.log('Form data:', formData);
+    
+    if (!isFormValid()) {
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      setSubmitError(null);
+
+      // Create datetime objects for the selected date with the form times
+      const startDateTime = new Date(selectedDate);
+      const [startHours, startMinutes] = formData.startTime.split(':');
+      startDateTime.setHours(parseInt(startHours), parseInt(startMinutes), 0, 0);
+
+      const endDateTime = new Date(selectedDate);
+      const [endHours, endMinutes] = formData.endTime.split(':');
+      endDateTime.setHours(parseInt(endHours), parseInt(endMinutes), 0, 0);
+
+      // Prepare the request body
+      const requestBody = {
+        UserId: parseInt(currentUserId),
+        ProjectId: parseInt(formData.project),
+        SegmentTypeId: parseInt(formData.segment),
+        StartDateTime: startDateTime.toISOString(),
+        EndDateTime: endDateTime.toISOString()
+      };
+
+      const response = await fetch('https://localhost:7201/api/timeentry', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const newTimeEntry = await response.json();
+      
+      // Clear the form
+      setFormData({
+        project: projects.length > 0 ? projects[0].id.toString() : '',
+        segment: segmentTypes.length > 0 ? segmentTypes[0].id.toString() : '',
+        startTime: '',
+        endTime: ''
+      });
+
+      // Notify parent component to refresh the list
+      if (onEntryAdded) {
+        onEntryAdded(newTimeEntry);
+      }
+
+    } catch (err) {
+      console.error('Failed to create time entry:', err);
+      setSubmitError(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -284,12 +345,12 @@ const TimeEntryForm = ({ selectedDate }) => {
                     <Form.Label className="fw-medium text-muted small">
                       &nbsp;
                     </Form.Label>
-                    {!isFormValid() ? (
+                    {!isFormValid() || isSubmitting ? (
                       <OverlayTrigger
                         placement="top"
                         overlay={
                           <Tooltip id="validation-tooltip">
-                            {getValidationMessage()}
+                            {isSubmitting ? 'Adding time entry...' : getValidationMessage()}
                           </Tooltip>
                         }
                       >
@@ -302,8 +363,17 @@ const TimeEntryForm = ({ selectedDate }) => {
                             className="w-100 d-flex align-items-center justify-content-center gap-2"
                             style={{ height: '48px' }}
                           >
-                            <i className="bi bi-plus-lg"></i>
-                            Add
+                            {isSubmitting ? (
+                              <>
+                                <Spinner animation="border" size="sm" className="me-2" />
+                                Adding...
+                              </>
+                            ) : (
+                              <>
+                                <i className="bi bi-plus-lg"></i>
+                                Add
+                              </>
+                            )}
                           </Button>
                         </div>
                       </OverlayTrigger>
@@ -312,6 +382,7 @@ const TimeEntryForm = ({ selectedDate }) => {
                         type="submit"
                         variant="primary"
                         size="lg"
+                        disabled={isSubmitting}
                         className="w-100 d-flex align-items-center justify-content-center gap-2"
                         style={{ height: '48px' }}
                       >
@@ -327,6 +398,14 @@ const TimeEntryForm = ({ selectedDate }) => {
                 </Col>
               </Row>
             </Form>
+            
+            {/* Error display */}
+            {submitError && (
+              <Alert variant="danger" className="mt-3 mb-0">
+                <i className="bi bi-exclamation-triangle-fill me-2"></i>
+                <strong>Error adding time entry:</strong> {submitError}
+              </Alert>
+            )}
           </Card.Body>
         </Card>
       </Container>
