@@ -145,21 +145,35 @@ const TimeEntryForm = ({ selectedDate, onEntryAdded }) => {
       setSubmitError(null);
 
       // Create datetime objects for the selected date with the form times
-      const startDateTime = new Date(selectedDate);
+      // We need to create the date in local time and format it properly
+      const year = selectedDate.getFullYear();
+      const month = selectedDate.getMonth();
+      const day = selectedDate.getDate();
+      
       const [startHours, startMinutes] = formData.startTime.split(':');
-      startDateTime.setHours(parseInt(startHours), parseInt(startMinutes), 0, 0);
+      const startDateTime = new Date(year, month, day, parseInt(startHours), parseInt(startMinutes), 0, 0);
 
-      const endDateTime = new Date(selectedDate);
       const [endHours, endMinutes] = formData.endTime.split(':');
-      endDateTime.setHours(parseInt(endHours), parseInt(endMinutes), 0, 0);
+      const endDateTime = new Date(year, month, day, parseInt(endHours), parseInt(endMinutes), 0, 0);
+
+      // Format as ISO string but preserve local time intent
+      const formatLocalDateTime = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+      };
 
       // Prepare the request body
       const requestBody = {
         UserId: parseInt(currentUserId),
         ProjectId: parseInt(formData.project),
         SegmentTypeId: parseInt(formData.segment),
-        StartDateTime: startDateTime.toISOString(),
-        EndDateTime: endDateTime.toISOString()
+        StartDateTime: formatLocalDateTime(startDateTime),
+        EndDateTime: formatLocalDateTime(endDateTime)
       };
 
       const response = await fetch('https://localhost:7201/api/timeentry', {
