@@ -82,7 +82,7 @@ const TimeEntriesList = ({ selectedDate }) => {
       const endParam = endDateTime.toISOString();
       
       const response = await fetch(
-        `https://localhost:7201/api/user/${currentUserId}/timeentries?startDateTime=${encodeURIComponent(startParam)}&endDateTime=${encodeURIComponent(endParam)}`
+        `https://localhost:7201/api/users/${currentUserId}/timeentries?startDateTime=${encodeURIComponent(startParam)}&endDateTime=${encodeURIComponent(endParam)}`
       );
       
       if (!response.ok) {

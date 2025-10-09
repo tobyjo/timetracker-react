@@ -74,7 +74,7 @@ const TimeEntryForm = ({ selectedDate, onEntryAdded }) => {
     try {
       setLoadingProjects(true);
       setProjectsError(null);
-      const response = await fetch(`https://localhost:7201/api/user/${currentUserId}/projects`);
+      const response = await fetch(`https://localhost:7201/api/users/${currentUserId}/projects`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -102,7 +102,7 @@ const TimeEntryForm = ({ selectedDate, onEntryAdded }) => {
     try {
       setLoadingSegmentTypes(true);
       setSegmentTypesError(null);
-      const response = await fetch(`https://localhost:7201/api/user/${currentUserId}/segmenttypes`);
+      const response = await fetch(`https://localhost:7201/api/users/${currentUserId}/segmenttypes`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -169,14 +169,13 @@ const TimeEntryForm = ({ selectedDate, onEntryAdded }) => {
 
       // Prepare the request body
       const requestBody = {
-        UserId: parseInt(currentUserId),
         ProjectId: parseInt(formData.project),
         SegmentTypeId: parseInt(formData.segment),
         StartDateTime: formatLocalDateTime(startDateTime),
         EndDateTime: formatLocalDateTime(endDateTime)
       };
 
-      const response = await fetch('https://localhost:7201/api/timeentry', {
+      const response = await fetch(`https://localhost:7201/api/users/${currentUserId}/timeentries`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
