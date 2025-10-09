@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form, Button, Spinner } from 'react-bootstrap';
 import { useUser } from '../contexts/UserContext';
 
@@ -11,11 +11,21 @@ const TimeEntryRow = ({ timeEntry, projects = [], segmentTypes = [], onEntryUpda
   
   // Extract initial values from timeEntry
   const [editData, setEditData] = useState({
-    projectId: timeEntry.projectID || '',
-    segmentTypeId: timeEntry.segmentTypeID || '', 
+    projectId: timeEntry.projectID ? timeEntry.projectID.toString() : '',
+    segmentTypeId: timeEntry.segmentTypeID ? timeEntry.segmentTypeID.toString() : '', 
     startTime: extractTimeFromDateTime(timeEntry.startDateTime),
     endTime: extractTimeFromDateTime(timeEntry.endDateTime)
   });
+
+  // Update editData when timeEntry changes
+  useEffect(() => {
+    setEditData({
+      projectId: timeEntry.projectID ? timeEntry.projectID.toString() : '',
+      segmentTypeId: timeEntry.segmentTypeID ? timeEntry.segmentTypeID.toString() : '', 
+      startTime: extractTimeFromDateTime(timeEntry.startDateTime),
+      endTime: extractTimeFromDateTime(timeEntry.endDateTime)
+    });
+  }, [timeEntry]);
 
   function extractTimeFromDateTime(dateTimeString) {
     const date = new Date(dateTimeString);
@@ -41,8 +51,8 @@ const TimeEntryRow = ({ timeEntry, projects = [], segmentTypes = [], onEntryUpda
   const handleCancel = () => {
     // Reset to original values
     setEditData({
-      projectId: timeEntry.projectID || '',
-      segmentTypeId: timeEntry.segmentTypeID || '',
+      projectId: timeEntry.projectID ? timeEntry.projectID.toString() : '',
+      segmentTypeId: timeEntry.segmentTypeID ? timeEntry.segmentTypeID.toString() : '',
       startTime: extractTimeFromDateTime(timeEntry.startDateTime),
       endTime: extractTimeFromDateTime(timeEntry.endDateTime)
     });
