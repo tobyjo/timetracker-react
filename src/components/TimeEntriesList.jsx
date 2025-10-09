@@ -62,6 +62,8 @@ const userWithTimeEntries = {
 const TimeEntriesList = ({ selectedDate }) => {
   const { currentUserId } = useUser();
   const [timeEntries, setTimeEntries] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [segmentTypes, setSegmentTypes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -99,9 +101,45 @@ const TimeEntriesList = ({ selectedDate }) => {
     }
   };
 
+  const fetchProjects = async () => {
+    try {
+      const response = await fetch(`https://localhost:7201/api/users/${currentUserId}/projects`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const userWithProjects = await response.json();
+      setProjects(userWithProjects.projects || []);
+    } catch (err) {
+      console.error('Failed to fetch projects:', err);
+    }
+  };
+
+  const fetchSegmentTypes = async () => {
+    try {
+      const response = await fetch(`https://localhost:7201/api/users/${currentUserId}/segmenttypes`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const userWithSegmentTypes = await response.json();
+      setSegmentTypes(userWithSegmentTypes.segmentTypes || []);
+    } catch (err) {
+      console.error('Failed to fetch segment types:', err);
+    }
+  };
+
+  const handleEntryUpdated = () => {
+    fetchUserWithTimeEntries(); // Refresh the list
+  };
+
+  const handleEntryDeleted = () => {
+    fetchUserWithTimeEntries(); // Refresh the list
+  };
+
   useEffect(() => {
     if (currentUserId && selectedDate) {
       fetchUserWithTimeEntries();
+      fetchProjects();
+      fetchSegmentTypes();
     }
   }, [currentUserId, selectedDate]);
 
@@ -186,7 +224,14 @@ const TimeEntriesList = ({ selectedDate }) => {
                 </thead>
                 <tbody>
                   {timeEntries.map(e => (
-                    <TimeEntryRow key={e.id} timeEntry={e} />
+                    <TimeEntryRow 
+                      key={e.id} 
+                      timeEntry={e}
+                      projects={projects}
+                      segmentTypes={segmentTypes}
+                      onEntryUpdated={handleEntryUpdated}
+                      onEntryDeleted={handleEntryDeleted}
+                    />
                   ))}
                 </tbody>
               </table>
