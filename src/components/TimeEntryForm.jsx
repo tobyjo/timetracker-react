@@ -48,18 +48,25 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
   };
 
   const validateDate = () => {
-    if (viewMode === 'week') {
-      if (!formData.selectedDate) {
-        return { isValid: false, message: 'Please select a date' };
-      }
-      
-      const selectedDateObj = new Date(formData.selectedDate);
-      const weekStartObj = new Date(weekStart);
-      const weekEndObj = new Date(weekEnd);
-      
-      if (selectedDateObj < weekStartObj || selectedDateObj > weekEndObj) {
-        return { isValid: false, message: 'Date must be within the current week' };
-      }
+    if (viewMode !== 'week') {
+      return { isValid: true, message: '' };
+    }
+    
+    if (!formData.selectedDate || !weekStart || !weekEnd) {
+      return { isValid: false, message: 'Date is required' };
+    }
+    
+    const selectedDate = new Date(formData.selectedDate);
+    const startOfWeek = new Date(weekStart);
+    const endOfWeek = new Date(weekEnd);
+    
+    // Set all dates to start of day for comparison
+    selectedDate.setHours(0, 0, 0, 0);
+    startOfWeek.setHours(0, 0, 0, 0);
+    endOfWeek.setHours(0, 0, 0, 0);
+    
+    if (selectedDate < startOfWeek || selectedDate > endOfWeek) {
+      return { isValid: false, message: 'Date must be within the current week' };
     }
     
     return { isValid: true, message: '' };
