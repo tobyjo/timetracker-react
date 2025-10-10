@@ -59,7 +59,7 @@ const userWithTimeEntries = {
 };
 */
 
-const TimeEntriesList = ({ selectedDate, viewMode = 'day', weekStart = null, weekEnd = null }) => {
+const TimeEntriesList = ({ selectedDate, viewMode = 'day', weekStart = null, weekEnd = null, monthStart = null, monthEnd = null }) => {
   const { currentUserId } = useUser();
   const [timeEntries, setTimeEntries] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -74,7 +74,14 @@ const TimeEntriesList = ({ selectedDate, viewMode = 'day', weekStart = null, wee
       
       let startDateTime, endDateTime;
       
-      if (viewMode === 'week' && weekStart && weekEnd) {
+      if (viewMode === 'month' && monthStart && monthEnd) {
+        // For month view, use the provided month start and end
+        startDateTime = new Date(monthStart);
+        startDateTime.setHours(0, 0, 0, 0); // Start of month
+        
+        endDateTime = new Date(monthEnd);
+        endDateTime.setHours(23, 59, 59, 999); // End of month
+      } else if (viewMode === 'week' && weekStart && weekEnd) {
         // For week view, use the provided week start and end
         startDateTime = new Date(weekStart);
         startDateTime.setHours(0, 0, 0, 0); // Start of week
@@ -174,12 +181,12 @@ const TimeEntriesList = ({ selectedDate, viewMode = 'day', weekStart = null, wee
   };
 
   useEffect(() => {
-    if (currentUserId && (selectedDate || (weekStart && weekEnd))) {
+    if (currentUserId && (selectedDate || (weekStart && weekEnd) || (monthStart && monthEnd))) {
       fetchUserWithTimeEntries();
       fetchProjects();
       fetchSegmentTypes();
     }
-  }, [currentUserId, selectedDate, weekStart, weekEnd, viewMode]);
+  }, [currentUserId, selectedDate, weekStart, weekEnd, monthStart, monthEnd, viewMode]);
 
   // Show loading spinner
   if (loading) {
@@ -254,7 +261,7 @@ const TimeEntriesList = ({ selectedDate, viewMode = 'day', weekStart = null, wee
                   <tr>
                     <th scope="col" className="ps-4 text-start">Project</th>
                     <th scope="col">Segment</th>
-                    {viewMode === 'week' && <th scope="col">Date</th>}
+                    {(viewMode === 'week' || viewMode === 'month') && <th scope="col">Date</th>}
                     <th scope="col">Time</th>
                     <th scope="col">Duration</th>
                     <th scope="col" className="text-end pe-4">
@@ -276,7 +283,7 @@ const TimeEntriesList = ({ selectedDate, viewMode = 'day', weekStart = null, wee
                   ))}
                   {timeEntries.length > 0 && (
                     <tr className="border-top border-2">
-                      <td colSpan={viewMode === 'week' ? "4" : "3"} className="text-end fw-bold text-muted ps-4">
+                      <td colSpan={(viewMode === 'week' || viewMode === 'month') ? "4" : "3"} className="text-end fw-bold text-muted ps-4">
                         Total Duration:
                       </td>
                       <td className="fw-bold text-primary">

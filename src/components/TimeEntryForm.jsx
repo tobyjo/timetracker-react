@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Card, Row, Col, Form, Button, Spinner, OverlayTrigger, Tooltip, Alert } from 'react-bootstrap';
 import { useUser } from '../contexts/UserContext';
 
-const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekEnd = null, onEntryAdded }) => {
+const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekEnd = null, monthStart = null, monthEnd = null, onEntryAdded }) => {
   const { currentUserId } = useUser();
   const [formData, setFormData] = useState({
     project: '',
@@ -48,25 +48,43 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
   };
 
   const validateDate = () => {
-    if (viewMode !== 'week') {
+    if (viewMode === 'day') {
       return { isValid: true, message: '' };
     }
     
-    if (!formData.selectedDate || !weekStart || !weekEnd) {
+    if (!formData.selectedDate) {
       return { isValid: false, message: 'Date is required' };
     }
     
     const selectedDate = new Date(formData.selectedDate);
-    const startOfWeek = new Date(weekStart);
-    const endOfWeek = new Date(weekEnd);
-    
-    // Set all dates to start of day for comparison
     selectedDate.setHours(0, 0, 0, 0);
-    startOfWeek.setHours(0, 0, 0, 0);
-    endOfWeek.setHours(0, 0, 0, 0);
     
-    if (selectedDate < startOfWeek || selectedDate > endOfWeek) {
-      return { isValid: false, message: 'Date must be within the current week' };
+    if (viewMode === 'week') {
+      if (!weekStart || !weekEnd) {
+        return { isValid: false, message: 'Date is required' };
+      }
+      
+      const startOfWeek = new Date(weekStart);
+      const endOfWeek = new Date(weekEnd);
+      startOfWeek.setHours(0, 0, 0, 0);
+      endOfWeek.setHours(0, 0, 0, 0);
+      
+      if (selectedDate < startOfWeek || selectedDate > endOfWeek) {
+        return { isValid: false, message: 'Date must be within the current week' };
+      }
+    } else if (viewMode === 'month') {
+      if (!monthStart || !monthEnd) {
+        return { isValid: false, message: 'Date is required' };
+      }
+      
+      const startOfMonth = new Date(monthStart);
+      const endOfMonth = new Date(monthEnd);
+      startOfMonth.setHours(0, 0, 0, 0);
+      endOfMonth.setHours(0, 0, 0, 0);
+      
+      if (selectedDate < startOfMonth || selectedDate > endOfMonth) {
+        return { isValid: false, message: 'Date must be within the current month' };
+      }
     }
     
     return { isValid: true, message: '' };
@@ -86,7 +104,7 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
   const getValidationMessage = () => {
     if (!formData.project) return 'Please select a project';
     if (!formData.segment) return 'Please select a segment';
-    if (viewMode === 'week' && !formData.selectedDate) return 'Please select a date';
+    if ((viewMode === 'week' || viewMode === 'month') && !formData.selectedDate) return 'Please select a date';
     if (!formData.startTime) return 'Please enter a start time';
     if (!formData.endTime) return 'Please enter an end time';
     
@@ -179,8 +197,14 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
         ...prev,
         selectedDate: weekStart.toISOString().split('T')[0]
       }));
+    } else if (viewMode === 'month' && monthStart) {
+      // Default to first day of month for month view
+      setFormData(prev => ({
+        ...prev,
+        selectedDate: monthStart.toISOString().split('T')[0]
+      }));
     }
-  }, [selectedDate, weekStart, viewMode]);
+  }, [selectedDate, weekStart, monthStart, viewMode]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -195,7 +219,7 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
 
       // Create datetime objects for the selected date with the form times
       // We need to create the date in local time and format it properly
-      const dateToUse = viewMode === 'week' ? new Date(formData.selectedDate) : selectedDate;
+      const dateToUse = (viewMode === 'week' || viewMode === 'month') ? new Date(formData.selectedDate) : selectedDate;
       const year = dateToUse.getFullYear();
       const month = dateToUse.getMonth();
       const day = dateToUse.getDate();
@@ -240,10 +264,19 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
       const newTimeEntry = await response.json();
       
       // Clear the form
+      let defaultDate = '';
+      if (viewMode === 'week' && weekStart) {
+        defaultDate = weekStart.toISOString().split('T')[0];
+      } else if (viewMode === 'month' && monthStart) {
+        defaultDate = monthStart.toISOString().split('T')[0];
+      } else if (selectedDate) {
+        defaultDate = selectedDate.toISOString().split('T')[0];
+      }
+      
       setFormData({
         project: projects.length > 0 ? projects[0].id.toString() : '',
         segment: segmentTypes.length > 0 ? segmentTypes[0].id.toString() : '',
-        selectedDate: viewMode === 'week' && weekStart ? weekStart.toISOString().split('T')[0] : (selectedDate ? selectedDate.toISOString().split('T')[0] : ''),
+        selectedDate: defaultDate,
         startTime: '',
         endTime: ''
       });
@@ -272,7 +305,7 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
             <Form onSubmit={handleSubmit}>
               <Row className="g-3 align-items-end">
                 {/* Project Dropdown */}
-                <Col md={viewMode === 'week' ? 2 : 3}>
+                <Col md={(viewMode === 'week' || viewMode === 'month') ? 2 : 3}>
                   <Form.Group>
                     <Form.Label className="fw-medium text-muted small">
                       Project <span className="text-danger">*</span>
@@ -316,7 +349,7 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
                 </Col>
 
                 {/* Segment Dropdown */}
-                <Col md={viewMode === 'week' ? 2 : 3}>
+                <Col md={(viewMode === 'week' || viewMode === 'month') ? 2 : 3}>
                   <Form.Group>
                     <Form.Label className="fw-medium text-muted small">
                       Segment <span className="text-danger">*</span>
@@ -359,8 +392,8 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
                   </Form.Group>
                 </Col>
 
-                {/* Date Input - Only for week view */}
-                {viewMode === 'week' && (
+                {/* Date Input - For week and month view */}
+                {(viewMode === 'week' || viewMode === 'month') && (
                   <Col md={2}>
                     <Form.Group>
                       <Form.Label className="fw-medium text-muted small">
@@ -372,13 +405,17 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
                         value={formData.selectedDate}
                         onChange={handleInputChange}
                         size="lg"
-                        min={weekStart ? weekStart.toISOString().split('T')[0] : ''}
-                        max={weekEnd ? weekEnd.toISOString().split('T')[0] : ''}
-                        isInvalid={viewMode === 'week' && !validateDate().isValid}
+                        min={viewMode === 'week' 
+                          ? (weekStart ? weekStart.toISOString().split('T')[0] : '')
+                          : (monthStart ? monthStart.toISOString().split('T')[0] : '')}
+                        max={viewMode === 'week' 
+                          ? (weekEnd ? weekEnd.toISOString().split('T')[0] : '')
+                          : (monthEnd ? monthEnd.toISOString().split('T')[0] : '')}
+                        isInvalid={(viewMode === 'week' || viewMode === 'month') && !validateDate().isValid}
                       />
                       {/* Reserved space for error message - always present to prevent layout shift */}
                       <div className="small text-danger" style={{ height: '1.25rem', lineHeight: '1.25rem' }}>
-                        {viewMode === 'week' && !validateDate().isValid 
+                        {(viewMode === 'week' || viewMode === 'month') && !validateDate().isValid 
                           ? validateDate().message 
                           : '\u00A0'} {/* Non-breaking space to maintain height */}
                       </div>
@@ -387,7 +424,7 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
                 )}
 
                 {/* Start Time */}
-                <Col md={viewMode === 'week' ? 2 : 2}>
+                <Col md={(viewMode === 'week' || viewMode === 'month') ? 2 : 2}>
                   <Form.Group>
                     <Form.Label className="fw-medium text-muted small">
                       Start Time <span className="text-danger">*</span>
@@ -408,7 +445,7 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
                 </Col>
 
                 {/* End Time */}
-                <Col md={viewMode === 'week' ? 2 : 2}>
+                <Col md={(viewMode === 'week' || viewMode === 'month') ? 2 : 2}>
                   <Form.Group>
                     <Form.Label className="fw-medium text-muted small">
                       End Time <span className="text-danger">*</span>
@@ -431,7 +468,7 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
                 </Col>
 
                 {/* Add Button */}
-                <Col md={viewMode === 'week' ? 2 : 2}>
+                <Col md={(viewMode === 'week' || viewMode === 'month') ? 2 : 2}>
                   <Form.Group>
                     <Form.Label className="fw-medium text-muted small">
                       &nbsp;

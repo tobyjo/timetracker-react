@@ -224,13 +224,13 @@ const TimeEntryRow = ({ timeEntry, projects = [], segmentTypes = [], viewMode = 
               ))}
             </Form.Select>
           </td>
-          {viewMode === 'week' && (
+          {(viewMode === 'week' || viewMode === 'month') && (
             <td className="text-muted">
-              {new Date(timeEntry.startDateTime).toLocaleDateString('en-US', { 
-                weekday: 'short',
-                month: 'short', 
-                day: 'numeric' 
-              })}
+              {new Date(timeEntry.startDateTime).toLocaleDateString('en-US', 
+                viewMode === 'month' 
+                  ? { weekday: 'short', month: 'short', day: 'numeric' }
+                  : { weekday: 'short', month: 'short', day: 'numeric' }
+              )}
             </td>
           )}
           <td>
@@ -298,7 +298,7 @@ const TimeEntryRow = ({ timeEntry, projects = [], segmentTypes = [], viewMode = 
         </tr>
         {error && (
           <tr>
-            <td colSpan={viewMode === 'week' ? "6" : "5"} className="p-2">
+            <td colSpan={(viewMode === 'week' || viewMode === 'month') ? "6" : "5"} className="p-2">
               <div className="alert alert-danger alert-sm mb-0 py-2">
                 <i className="bi bi-exclamation-triangle-fill me-2"></i>
                 {error}
@@ -315,13 +315,13 @@ const TimeEntryRow = ({ timeEntry, projects = [], segmentTypes = [], viewMode = 
     <tr>
       <td className="ps-4 fw-semibold">{timeEntry.projectCode}</td>
       <td className="text-muted">{timeEntry.segmentTypeName}</td>
-      {viewMode === 'week' && (
+      {(viewMode === 'week' || viewMode === 'month') && (
         <td className="text-muted">
-          {new Date(timeEntry.startDateTime).toLocaleDateString('en-US', { 
-            weekday: 'short',
-            month: 'short', 
-            day: 'numeric' 
-          })}
+          {new Date(timeEntry.startDateTime).toLocaleDateString('en-US', 
+            viewMode === 'month' 
+              ? { weekday: 'short', month: 'short', day: 'numeric' }
+              : { weekday: 'short', month: 'short', day: 'numeric' }
+          )}
         </td>
       )}
       <td className="text-muted">
