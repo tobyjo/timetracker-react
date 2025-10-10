@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Form, Button, Spinner } from 'react-bootstrap';
 import { useUser } from '../contexts/UserContext';
 
-const TimeEntryRow = ({ timeEntry, projects = [], segmentTypes = [], onEntryUpdated, onEntryDeleted }) => {
+const TimeEntryRow = ({ timeEntry, projects = [], segmentTypes = [], viewMode = 'day', onEntryUpdated, onEntryDeleted }) => {
   const { currentUserId } = useUser();
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -224,6 +224,15 @@ const TimeEntryRow = ({ timeEntry, projects = [], segmentTypes = [], onEntryUpda
               ))}
             </Form.Select>
           </td>
+          {viewMode === 'week' && (
+            <td className="text-muted">
+              {new Date(timeEntry.startDateTime).toLocaleDateString('en-US', { 
+                weekday: 'short',
+                month: 'short', 
+                day: 'numeric' 
+              })}
+            </td>
+          )}
           <td>
             <div className="d-flex gap-1 align-items-center">
               <Form.Control
@@ -289,7 +298,7 @@ const TimeEntryRow = ({ timeEntry, projects = [], segmentTypes = [], onEntryUpda
         </tr>
         {error && (
           <tr>
-            <td colSpan="5" className="p-2">
+            <td colSpan={viewMode === 'week' ? "6" : "5"} className="p-2">
               <div className="alert alert-danger alert-sm mb-0 py-2">
                 <i className="bi bi-exclamation-triangle-fill me-2"></i>
                 {error}
@@ -306,6 +315,15 @@ const TimeEntryRow = ({ timeEntry, projects = [], segmentTypes = [], onEntryUpda
     <tr>
       <td className="ps-4 fw-semibold">{timeEntry.projectCode}</td>
       <td className="text-muted">{timeEntry.segmentTypeName}</td>
+      {viewMode === 'week' && (
+        <td className="text-muted">
+          {new Date(timeEntry.startDateTime).toLocaleDateString('en-US', { 
+            weekday: 'short',
+            month: 'short', 
+            day: 'numeric' 
+          })}
+        </td>
+      )}
       <td className="text-muted">
         {new Date(timeEntry.startDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(timeEntry.endDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
       </td>

@@ -3,10 +3,21 @@ import { Container, Nav } from 'react-bootstrap';
 import TimeEntryForm from './TimeEntryForm';
 import TimeEntriesList from './TimeEntriesList';
 import DayNavigation from './DayNavigation';
+import WeekNavigation from './WeekNavigation';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('day');
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedWeekStart, setSelectedWeekStart] = useState(() => {
+    // Helper function to get the Monday of a given week
+    const getWeekStart = (date) => {
+      const d = new Date(date);
+      const day = d.getDay();
+      const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is Sunday
+      return new Date(d.setDate(diff));
+    };
+    return getWeekStart(new Date());
+  });
   const [refreshKey, setRefreshKey] = useState(0);
 
   const handleTabSelect = (tab) => {
@@ -15,6 +26,10 @@ const Dashboard = () => {
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
+  };
+
+  const handleWeekChange = (weekStart) => {
+    setSelectedWeekStart(weekStart);
   };
 
   const handleEntryAdded = (newEntry) => {
@@ -39,16 +54,33 @@ const Dashboard = () => {
     </>
   );
 
-  const renderWeekView = () => (
-    <Container fluid className="py-4">
-      <Container>
-        <div className="text-center py-5">
-          <h3 className="text-muted mb-3">Weekly View</h3>
-          <p className="text-muted">Week view functionality coming soon...</p>
-        </div>
-      </Container>
-    </Container>
-  );
+  const renderWeekView = () => {
+    const weekEnd = new Date(selectedWeekStart);
+    weekEnd.setDate(selectedWeekStart.getDate() + 6);
+
+    return (
+      <>
+        <WeekNavigation 
+          currentWeekStart={selectedWeekStart} 
+          onWeekChange={handleWeekChange} 
+        />
+        <TimeEntryForm 
+          selectedDate={selectedDate}
+          viewMode="week"
+          weekStart={selectedWeekStart}
+          weekEnd={weekEnd}
+          onEntryAdded={handleEntryAdded}
+        />
+        <TimeEntriesList 
+          key={refreshKey}
+          selectedDate={selectedDate}
+          viewMode="week"
+          weekStart={selectedWeekStart}
+          weekEnd={weekEnd}
+        />
+      </>
+    );
+  };
 
   return (
     <>
@@ -56,8 +88,14 @@ const Dashboard = () => {
       <Container fluid className="py-4">
         <Container>
           <div className="mb-4">
-            <h1 className="mb-1 fw-bold">Daily Entries</h1>
-            <p className="text-muted mb-0">Track your time across projects and tasks for a specific day.</p>
+            <h1 className="mb-1 fw-bold">
+              {activeTab === 'day' ? 'Daily Entries' : 'Weekly Entries'}
+            </h1>
+            <p className="text-muted mb-0">
+              {activeTab === 'day' 
+                ? 'Track your time across projects and tasks for a specific day.' 
+                : 'Track your time across projects and tasks for a specific week.'}
+            </p>
           </div>
         </Container>
       </Container>

@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Container, Card, Row, Col, Form, Button, Spinner, OverlayTrigger, Tooltip, Alert } from 'react-bootstrap';
 import { useUser } from '../contexts/UserContext';
 
-const TimeEntryForm = ({ selectedDate, onEntryAdded }) => {
+const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekEnd = null, onEntryAdded }) => {
   const { currentUserId } = useUser();
   const [formData, setFormData] = useState({
     project: '',
     segment: '',
+    selectedDate: selectedDate ? selectedDate.toISOString().split('T')[0] : '',
     startTime: '',
     endTime: ''
   });
@@ -46,21 +47,46 @@ const TimeEntryForm = ({ selectedDate, onEntryAdded }) => {
     return { isValid: true, message: '' };
   };
 
+  const validateDate = () => {
+    if (viewMode === 'week') {
+      if (!formData.selectedDate) {
+        return { isValid: false, message: 'Please select a date' };
+      }
+      
+      const selectedDateObj = new Date(formData.selectedDate);
+      const weekStartObj = new Date(weekStart);
+      const weekEndObj = new Date(weekEnd);
+      
+      if (selectedDateObj < weekStartObj || selectedDateObj > weekEndObj) {
+        return { isValid: false, message: 'Date must be within the current week' };
+      }
+    }
+    
+    return { isValid: true, message: '' };
+  };
+
   const isFormValid = () => {
     const hasProject = formData.project !== '';
     const hasSegment = formData.segment !== '';
     const hasStartTime = formData.startTime !== '';
     const hasEndTime = formData.endTime !== '';
     const timeRangeValid = validateTimeRange().isValid;
+    const dateValid = validateDate().isValid;
     
-    return hasProject && hasSegment && hasStartTime && hasEndTime && timeRangeValid;
+    return hasProject && hasSegment && hasStartTime && hasEndTime && timeRangeValid && dateValid;
   };
 
   const getValidationMessage = () => {
     if (!formData.project) return 'Please select a project';
     if (!formData.segment) return 'Please select a segment';
+    if (viewMode === 'week' && !formData.selectedDate) return 'Please select a date';
     if (!formData.startTime) return 'Please enter a start time';
     if (!formData.endTime) return 'Please enter an end time';
+    
+    const dateValidation = validateDate();
+    if (!dateValidation.isValid && dateValidation.message) {
+      return dateValidation.message;
+    }
     
     const timeValidation = validateTimeRange();
     if (!timeValidation.isValid && timeValidation.message) {
@@ -133,6 +159,22 @@ const TimeEntryForm = ({ selectedDate, onEntryAdded }) => {
     }
   }, [currentUserId]);
 
+  useEffect(() => {
+    // Update selectedDate in formData when props change
+    if (viewMode === 'day' && selectedDate) {
+      setFormData(prev => ({
+        ...prev,
+        selectedDate: selectedDate.toISOString().split('T')[0]
+      }));
+    } else if (viewMode === 'week' && weekStart) {
+      // Default to Monday (weekStart) for week view
+      setFormData(prev => ({
+        ...prev,
+        selectedDate: weekStart.toISOString().split('T')[0]
+      }));
+    }
+  }, [selectedDate, weekStart, viewMode]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -146,9 +188,10 @@ const TimeEntryForm = ({ selectedDate, onEntryAdded }) => {
 
       // Create datetime objects for the selected date with the form times
       // We need to create the date in local time and format it properly
-      const year = selectedDate.getFullYear();
-      const month = selectedDate.getMonth();
-      const day = selectedDate.getDate();
+      const dateToUse = viewMode === 'week' ? new Date(formData.selectedDate) : selectedDate;
+      const year = dateToUse.getFullYear();
+      const month = dateToUse.getMonth();
+      const day = dateToUse.getDate();
       
       const [startHours, startMinutes] = formData.startTime.split(':');
       const startDateTime = new Date(year, month, day, parseInt(startHours), parseInt(startMinutes), 0, 0);
@@ -193,6 +236,7 @@ const TimeEntryForm = ({ selectedDate, onEntryAdded }) => {
       setFormData({
         project: projects.length > 0 ? projects[0].id.toString() : '',
         segment: segmentTypes.length > 0 ? segmentTypes[0].id.toString() : '',
+        selectedDate: viewMode === 'week' && weekStart ? weekStart.toISOString().split('T')[0] : (selectedDate ? selectedDate.toISOString().split('T')[0] : ''),
         startTime: '',
         endTime: ''
       });
@@ -265,7 +309,7 @@ const TimeEntryForm = ({ selectedDate, onEntryAdded }) => {
                 </Col>
 
                 {/* Segment Dropdown */}
-                <Col md={3}>
+                <Col md={viewMode === 'week' ? 2 : 3}>
                   <Form.Group>
                     <Form.Label className="fw-medium text-muted small">
                       Segment <span className="text-danger">*</span>
@@ -307,6 +351,33 @@ const TimeEntryForm = ({ selectedDate, onEntryAdded }) => {
                     </div>
                   </Form.Group>
                 </Col>
+
+                {/* Date Input - Only for week view */}
+                {viewMode === 'week' && (
+                  <Col md={2}>
+                    <Form.Group>
+                      <Form.Label className="fw-medium text-muted small">
+                        Date <span className="text-danger">*</span>
+                      </Form.Label>
+                      <Form.Control
+                        type="date"
+                        name="selectedDate"
+                        value={formData.selectedDate}
+                        onChange={handleInputChange}
+                        size="lg"
+                        min={weekStart ? weekStart.toISOString().split('T')[0] : ''}
+                        max={weekEnd ? weekEnd.toISOString().split('T')[0] : ''}
+                        isInvalid={viewMode === 'week' && !validateDate().isValid}
+                      />
+                      {/* Reserved space for error message - always present to prevent layout shift */}
+                      <div className="small text-danger" style={{ height: '1.25rem', lineHeight: '1.25rem' }}>
+                        {viewMode === 'week' && !validateDate().isValid 
+                          ? validateDate().message 
+                          : '\u00A0'} {/* Non-breaking space to maintain height */}
+                      </div>
+                    </Form.Group>
+                  </Col>
+                )}
 
                 {/* Start Time */}
                 <Col md={2}>

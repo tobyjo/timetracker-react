@@ -59,7 +59,7 @@ const userWithTimeEntries = {
 };
 */
 
-const TimeEntriesList = ({ selectedDate }) => {
+const TimeEntriesList = ({ selectedDate, viewMode = 'day', weekStart = null, weekEnd = null }) => {
   const { currentUserId } = useUser();
   const [timeEntries, setTimeEntries] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -72,12 +72,23 @@ const TimeEntriesList = ({ selectedDate }) => {
       setLoading(true);
       setError(null);
       
-      // Create start and end datetime for the selected date
-      const startDateTime = new Date(selectedDate);
-      startDateTime.setHours(0, 0, 0, 0); // Start of day
+      let startDateTime, endDateTime;
       
-      const endDateTime = new Date(selectedDate);
-      endDateTime.setHours(23, 59, 59, 999); // End of day
+      if (viewMode === 'week' && weekStart && weekEnd) {
+        // For week view, use the provided week start and end
+        startDateTime = new Date(weekStart);
+        startDateTime.setHours(0, 0, 0, 0); // Start of week
+        
+        endDateTime = new Date(weekEnd);
+        endDateTime.setHours(23, 59, 59, 999); // End of week
+      } else {
+        // For day view, use the selected date
+        startDateTime = new Date(selectedDate);
+        startDateTime.setHours(0, 0, 0, 0); // Start of day
+        
+        endDateTime = new Date(selectedDate);
+        endDateTime.setHours(23, 59, 59, 999); // End of day
+      }
       
       // Format dates for API (ISO string format)
       const startParam = startDateTime.toISOString();
@@ -163,12 +174,12 @@ const TimeEntriesList = ({ selectedDate }) => {
   };
 
   useEffect(() => {
-    if (currentUserId && selectedDate) {
+    if (currentUserId && (selectedDate || (weekStart && weekEnd))) {
       fetchUserWithTimeEntries();
       fetchProjects();
       fetchSegmentTypes();
     }
-  }, [currentUserId, selectedDate]);
+  }, [currentUserId, selectedDate, weekStart, weekEnd, viewMode]);
 
   // Show loading spinner
   if (loading) {
@@ -243,6 +254,7 @@ const TimeEntriesList = ({ selectedDate }) => {
                   <tr>
                     <th scope="col" className="ps-4 text-start">Project</th>
                     <th scope="col">Segment</th>
+                    {viewMode === 'week' && <th scope="col">Date</th>}
                     <th scope="col">Time</th>
                     <th scope="col">Duration</th>
                     <th scope="col" className="text-end pe-4">
@@ -257,13 +269,14 @@ const TimeEntriesList = ({ selectedDate }) => {
                       timeEntry={e}
                       projects={projects}
                       segmentTypes={segmentTypes}
+                      viewMode={viewMode}
                       onEntryUpdated={handleEntryUpdated}
                       onEntryDeleted={handleEntryDeleted}
                     />
                   ))}
                   {timeEntries.length > 0 && (
                     <tr className="border-top border-2">
-                      <td colSpan="3" className="text-end fw-bold text-muted ps-4">
+                      <td colSpan={viewMode === 'week' ? "4" : "3"} className="text-end fw-bold text-muted ps-4">
                         Total Duration:
                       </td>
                       <td className="fw-bold text-primary">
