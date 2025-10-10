@@ -13,15 +13,17 @@ const MonthNavigation = ({ currentMonthStart, onMonthChange }) => {
   };
 
   const handlePreviousMonth = () => {
-    const previousMonth = new Date(currentMonthStart);
-    previousMonth.setMonth(previousMonth.getMonth() - 1);
-    onMonthChange(getMonthStart(previousMonth));
+    const year = currentMonthStart.getFullYear();
+    const month = currentMonthStart.getMonth() - 1;
+    const previousMonthStart = new Date(year, month, 1);
+    onMonthChange(previousMonthStart);
   };
 
   const handleNextMonth = () => {
-    const nextMonth = new Date(currentMonthStart);
-    nextMonth.setMonth(nextMonth.getMonth() + 1);
-    onMonthChange(getMonthStart(nextMonth));
+    const year = currentMonthStart.getFullYear();
+    const month = currentMonthStart.getMonth() + 1;
+    const nextMonthStart = new Date(year, month, 1);
+    onMonthChange(nextMonthStart);
   };
 
   const handleThisMonth = () => {

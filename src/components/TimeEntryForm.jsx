@@ -1,16 +1,51 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Container, Card, Row, Col, Form, Button, Spinner, OverlayTrigger, Tooltip, Alert } from 'react-bootstrap';
 import { useUser } from '../contexts/UserContext';
 
 const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekEnd = null, monthStart = null, monthEnd = null, onEntryAdded }) => {
   const { currentUserId } = useUser();
+  
+  // Helper function to format date as YYYY-MM-DD without timezone conversion
+  const formatDateLocal = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Memoized default date to prevent flicker during navigation
+  const defaultDate = useMemo(() => {
+    if (viewMode === 'month') {
+      // Use first day of the displayed month
+      if (monthStart) {
+        const year = monthStart.getFullYear();
+        const month = monthStart.getMonth();
+        const firstDay = new Date(year, month, 1);
+        return formatDateLocal(firstDay);
+      } else {
+        // Fallback to first day of current month
+        const now = new Date();
+        const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+        return formatDateLocal(firstDay);
+      }
+    } else if (viewMode === 'week' && weekStart) {
+      return formatDateLocal(weekStart);
+    } else if (viewMode === 'day' && selectedDate) {
+      return formatDateLocal(selectedDate);
+    }
+    return formatDateLocal(new Date());
+  }, [viewMode, monthStart, weekStart, selectedDate]);
+  
   const [formData, setFormData] = useState({
     project: '',
     segment: '',
-    selectedDate: selectedDate ? selectedDate.toISOString().split('T')[0] : '',
+    selectedDate: '',
     startTime: '',
     endTime: ''
   });
+  
+  // Flag to track navigation transitions and prevent validation flicker
+  const [isNavigating, setIsNavigating] = useState(false);
   
   const [projects, setProjects] = useState([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
@@ -52,11 +87,13 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
       return { isValid: true, message: '' };
     }
     
-    if (!formData.selectedDate) {
+    // Use the displayed date value (which is always defaultDate during navigation)
+    const dateToValidate = defaultDate;
+    if (!dateToValidate) {
       return { isValid: false, message: 'Date is required' };
     }
     
-    const selectedDate = new Date(formData.selectedDate);
+    const selectedDate = new Date(dateToValidate);
     selectedDate.setHours(0, 0, 0, 0);
     
     if (viewMode === 'week') {
@@ -184,27 +221,28 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
     }
   }, [currentUserId]);
 
+  // Update date immediately when navigation changes to prevent validation flicker
   useEffect(() => {
-    // Update selectedDate in formData when props change
-    if (viewMode === 'day' && selectedDate) {
-      setFormData(prev => ({
-        ...prev,
-        selectedDate: selectedDate.toISOString().split('T')[0]
-      }));
-    } else if (viewMode === 'week' && weekStart) {
-      // Default to Monday (weekStart) for week view
-      setFormData(prev => ({
-        ...prev,
-        selectedDate: weekStart.toISOString().split('T')[0]
-      }));
-    } else if (viewMode === 'month' && monthStart) {
-      // Default to first day of month for month view
-      setFormData(prev => ({
-        ...prev,
-        selectedDate: monthStart.toISOString().split('T')[0]
-      }));
-    }
-  }, [selectedDate, weekStart, monthStart, viewMode]);
+    // Set navigation flag to suppress validation errors during transition
+    setIsNavigating(true);
+    
+    setFormData(prev => {
+      if (prev.selectedDate !== defaultDate) {
+        return {
+          ...prev,
+          selectedDate: defaultDate
+        };
+      }
+      return prev;
+    });
+
+    // Clear navigation flag after a brief delay to allow state to update
+    const timer = setTimeout(() => {
+      setIsNavigating(false);
+    }, 50);
+
+    return () => clearTimeout(timer);
+  }, [defaultDate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -219,7 +257,7 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
 
       // Create datetime objects for the selected date with the form times
       // We need to create the date in local time and format it properly
-      const dateToUse = (viewMode === 'week' || viewMode === 'month') ? new Date(formData.selectedDate) : selectedDate;
+      const dateToUse = (viewMode === 'week' || viewMode === 'month') ? new Date(defaultDate) : selectedDate;
       const year = dateToUse.getFullYear();
       const month = dateToUse.getMonth();
       const day = dateToUse.getDate();
@@ -263,23 +301,14 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
 
       const newTimeEntry = await response.json();
       
-      // Clear the form
-      let defaultDate = '';
-      if (viewMode === 'week' && weekStart) {
-        defaultDate = weekStart.toISOString().split('T')[0];
-      } else if (viewMode === 'month' && monthStart) {
-        defaultDate = monthStart.toISOString().split('T')[0];
-      } else if (selectedDate) {
-        defaultDate = selectedDate.toISOString().split('T')[0];
-      }
-      
-      setFormData({
+      // Clear the form but keep the same date
+      setFormData(prev => ({
         project: projects.length > 0 ? projects[0].id.toString() : '',
         segment: segmentTypes.length > 0 ? segmentTypes[0].id.toString() : '',
-        selectedDate: defaultDate,
+        selectedDate: prev.selectedDate, // Keep the same date
         startTime: '',
         endTime: ''
-      });
+      }));
 
       // Notify parent component to refresh the list
       if (onEntryAdded) {
@@ -293,6 +322,9 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
       setIsSubmitting(false);
     }
   };
+
+  // Compute validation once to prevent multiple calls during render
+  const dateValidation = (viewMode === 'week' || viewMode === 'month') ? validateDate() : { isValid: true, message: '' };
 
   return (
     <Container fluid className="py-2">
@@ -402,22 +434,20 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
                       <Form.Control
                         type="date"
                         name="selectedDate"
-                        value={formData.selectedDate}
+                        value={defaultDate}
                         onChange={handleInputChange}
                         size="lg"
                         min={viewMode === 'week' 
-                          ? (weekStart ? weekStart.toISOString().split('T')[0] : '')
-                          : (monthStart ? monthStart.toISOString().split('T')[0] : '')}
+                          ? (weekStart ? formatDateLocal(weekStart) : '')
+                          : (monthStart ? formatDateLocal(monthStart) : '')}
                         max={viewMode === 'week' 
-                          ? (weekEnd ? weekEnd.toISOString().split('T')[0] : '')
-                          : (monthEnd ? monthEnd.toISOString().split('T')[0] : '')}
-                        isInvalid={(viewMode === 'week' || viewMode === 'month') && !validateDate().isValid}
+                          ? (weekEnd ? formatDateLocal(weekEnd) : '')
+                          : (monthEnd ? formatDateLocal(monthEnd) : '')}
+                        isInvalid={!dateValidation.isValid}
                       />
                       {/* Reserved space for error message - always present to prevent layout shift */}
                       <div className="small text-danger" style={{ height: '1.25rem', lineHeight: '1.25rem' }}>
-                        {(viewMode === 'week' || viewMode === 'month') && !validateDate().isValid 
-                          ? validateDate().message 
-                          : '\u00A0'} {/* Non-breaking space to maintain height */}
+                        {!dateValidation.isValid ? dateValidation.message : '\u00A0'} {/* Non-breaking space to maintain height */}
                       </div>
                     </Form.Group>
                   </Col>
