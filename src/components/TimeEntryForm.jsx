@@ -272,7 +272,7 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
             <Form onSubmit={handleSubmit}>
               <Row className="g-3 align-items-end">
                 {/* Project Dropdown */}
-                <Col md={3}>
+                <Col md={viewMode === 'week' ? 2 : 3}>
                   <Form.Group>
                     <Form.Label className="fw-medium text-muted small">
                       Project <span className="text-danger">*</span>
@@ -387,7 +387,7 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
                 )}
 
                 {/* Start Time */}
-                <Col md={2}>
+                <Col md={viewMode === 'week' ? 2 : 2}>
                   <Form.Group>
                     <Form.Label className="fw-medium text-muted small">
                       Start Time <span className="text-danger">*</span>
@@ -408,7 +408,7 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
                 </Col>
 
                 {/* End Time */}
-                <Col md={2}>
+                <Col md={viewMode === 'week' ? 2 : 2}>
                   <Form.Group>
                     <Form.Label className="fw-medium text-muted small">
                       End Time <span className="text-danger">*</span>
@@ -431,7 +431,7 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
                 </Col>
 
                 {/* Add Button */}
-                <Col md={2}>
+                <Col md={viewMode === 'week' ? 2 : 2}>
                   <Form.Group>
                     <Form.Label className="fw-medium text-muted small">
                       &nbsp;
