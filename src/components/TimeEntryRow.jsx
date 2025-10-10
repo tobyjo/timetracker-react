@@ -34,6 +34,25 @@ const TimeEntryRow = ({ timeEntry, projects = [], segmentTypes = [], onEntryUpda
     return `${hours}:${minutes}`;
   }
 
+  const calculateDuration = (startDateTime, endDateTime) => {
+    const start = new Date(startDateTime);
+    const end = new Date(endDateTime);
+    const diffInMs = end - start;
+    
+    if (diffInMs <= 0) return '0h 0m';
+    
+    const hours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const minutes = Math.floor((diffInMs % (1000 * 60 * 60)) / (1000 * 60));
+    
+    if (hours === 0) {
+      return `${minutes}m`;
+    } else if (minutes === 0) {
+      return `${hours}h`;
+    } else {
+      return `${hours}h ${minutes}m`;
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setEditData(prev => ({
@@ -115,7 +134,7 @@ const TimeEntryRow = ({ timeEntry, projects = [], segmentTypes = [], onEntryUpda
         EndDateTime: formatLocalDateTime(endDateTime)
       };
 
-      const response = await fetch(`https://localhost:7201/api/users/${currentUserId}/timeentries/${timeEntry.id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/${currentUserId}/timeentries/${timeEntry.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -149,7 +168,7 @@ const TimeEntryRow = ({ timeEntry, projects = [], segmentTypes = [], onEntryUpda
       setIsDeleting(true);
       setError(null);
 
-      const response = await fetch(`https://localhost:7201/api/users/${currentUserId}/timeentries/${timeEntry.id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/${currentUserId}/timeentries/${timeEntry.id}`, {
         method: 'DELETE'
       });
 
@@ -228,6 +247,17 @@ const TimeEntryRow = ({ timeEntry, projects = [], segmentTypes = [], onEntryUpda
               />
             </div>
           </td>
+          <td className="text-muted">
+            {(() => {
+              if (editData.startTime && editData.endTime) {
+                const today = new Date().toISOString().split('T')[0];
+                const startDateTime = `${today}T${editData.startTime}:00`;
+                const endDateTime = `${today}T${editData.endTime}:00`;
+                return calculateDuration(startDateTime, endDateTime);
+              }
+              return '-';
+            })()}
+          </td>
           <td className="text-end pe-4">
             <div className="d-flex gap-1 justify-content-end">
               <Button
@@ -259,7 +289,7 @@ const TimeEntryRow = ({ timeEntry, projects = [], segmentTypes = [], onEntryUpda
         </tr>
         {error && (
           <tr>
-            <td colSpan="4" className="p-2">
+            <td colSpan="5" className="p-2">
               <div className="alert alert-danger alert-sm mb-0 py-2">
                 <i className="bi bi-exclamation-triangle-fill me-2"></i>
                 {error}
@@ -278,6 +308,9 @@ const TimeEntryRow = ({ timeEntry, projects = [], segmentTypes = [], onEntryUpda
       <td className="text-muted">{timeEntry.segmentTypeName}</td>
       <td className="text-muted">
         {new Date(timeEntry.startDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(timeEntry.endDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+      </td>
+      <td className="text-muted">
+        {calculateDuration(timeEntry.startDateTime, timeEntry.endDateTime)}
       </td>
       <td className="text-end pe-4">
         <Button

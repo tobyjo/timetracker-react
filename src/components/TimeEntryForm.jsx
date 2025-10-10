@@ -175,7 +175,7 @@ const TimeEntryForm = ({ selectedDate, onEntryAdded }) => {
         EndDateTime: formatLocalDateTime(endDateTime)
       };
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}api/users/${currentUserId}/timeentries`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/${currentUserId}/timeentries`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

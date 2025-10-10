@@ -135,6 +135,33 @@ const TimeEntriesList = ({ selectedDate }) => {
     fetchUserWithTimeEntries(); // Refresh the list
   };
 
+  const calculateTotalDuration = (entries) => {
+    if (!entries || entries.length === 0) return '0h 0m';
+    
+    let totalMinutes = 0;
+    
+    entries.forEach(entry => {
+      const start = new Date(entry.startDateTime);
+      const end = new Date(entry.endDateTime);
+      const diffInMs = end - start;
+      
+      if (diffInMs > 0) {
+        totalMinutes += Math.floor(diffInMs / (1000 * 60));
+      }
+    });
+    
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    
+    if (hours === 0) {
+      return `${minutes}m`;
+    } else if (minutes === 0) {
+      return `${hours}h`;
+    } else {
+      return `${hours}h ${minutes}m`;
+    }
+  };
+
   useEffect(() => {
     if (currentUserId && selectedDate) {
       fetchUserWithTimeEntries();
@@ -217,6 +244,7 @@ const TimeEntriesList = ({ selectedDate }) => {
                     <th scope="col" className="ps-4 text-start">Project</th>
                     <th scope="col">Segment</th>
                     <th scope="col">Time</th>
+                    <th scope="col">Duration</th>
                     <th scope="col" className="text-end pe-4">
                       <span className="visually-hidden">Edit</span>
                     </th>
@@ -233,6 +261,17 @@ const TimeEntriesList = ({ selectedDate }) => {
                       onEntryDeleted={handleEntryDeleted}
                     />
                   ))}
+                  {timeEntries.length > 0 && (
+                    <tr className="border-top border-2">
+                      <td colSpan="3" className="text-end fw-bold text-muted ps-4">
+                        Total Duration:
+                      </td>
+                      <td className="fw-bold text-primary">
+                        {calculateTotalDuration(timeEntries)}
+                      </td>
+                      <td className="pe-4"></td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
