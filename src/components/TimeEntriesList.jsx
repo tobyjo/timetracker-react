@@ -84,7 +84,7 @@ const TimeEntriesList = ({ selectedDate }) => {
       const endParam = endDateTime.toISOString();
       
       const response = await fetch(
-        `https://localhost:7201/api/users/${currentUserId}/timeentries?startDateTime=${encodeURIComponent(startParam)}&endDateTime=${encodeURIComponent(endParam)}`
+        `${import.meta.env.VITE_API_BASE_URL}/api/users/${currentUserId}/timeentries?startDateTime=${encodeURIComponent(startParam)}&endDateTime=${encodeURIComponent(endParam)}`
       );
       
       if (!response.ok) {
@@ -103,7 +103,7 @@ const TimeEntriesList = ({ selectedDate }) => {
 
   const fetchProjects = async () => {
     try {
-      const response = await fetch(`https://localhost:7201/api/users/${currentUserId}/projects`);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/${currentUserId}/projects`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -116,7 +116,7 @@ const TimeEntriesList = ({ selectedDate }) => {
 
   const fetchSegmentTypes = async () => {
     try {
-      const response = await fetch(`https://localhost:7201/api/users/${currentUserId}/segmenttypes`);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/${currentUserId}/segmenttypes`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }

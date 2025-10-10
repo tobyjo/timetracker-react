@@ -74,7 +74,7 @@ const TimeEntryForm = ({ selectedDate, onEntryAdded }) => {
     try {
       setLoadingProjects(true);
       setProjectsError(null);
-      const response = await fetch(`https://localhost:7201/api/users/${currentUserId}/projects`);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/${currentUserId}/projects`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -102,7 +102,7 @@ const TimeEntryForm = ({ selectedDate, onEntryAdded }) => {
     try {
       setLoadingSegmentTypes(true);
       setSegmentTypesError(null);
-      const response = await fetch(`https://localhost:7201/api/users/${currentUserId}/segmenttypes`);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/${currentUserId}/segmenttypes`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -175,7 +175,7 @@ const TimeEntryForm = ({ selectedDate, onEntryAdded }) => {
         EndDateTime: formatLocalDateTime(endDateTime)
       };
 
-      const response = await fetch(`https://localhost:7201/api/users/${currentUserId}/timeentries`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}api/users/${currentUserId}/timeentries`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -246,7 +246,7 @@ const TimeEntryForm = ({ selectedDate, onEntryAdded }) => {
                           <option value="">Select a project</option>
                           {projects.map(project => (
                             <option key={project.id} value={project.id}>
-                              {project.code} - {project.description}
+                              {project.code}
                             </option>
                           ))}
                         </>
