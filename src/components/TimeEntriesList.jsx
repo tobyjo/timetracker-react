@@ -2,65 +2,9 @@ import { useEffect, useState } from "react";
 import { Alert, Spinner, Button, Card, Container } from "react-bootstrap";
 import TimeEntryRow from "./TimeEntryRow.jsx";
 import { useUser } from "../contexts/UserContext";
-/*
-  Requirements:
-  - Ensure Bootstrap CSS is loaded globally, e.g. in main.jsx:
-    import "bootstrap/dist/css/bootstrap.min.css";
-    import "./time-entry-dashboard.css"; // optional for custom styles below
-*/
-
-/*
-GET https://localhost:7201/api/user/1/timeentries
-*/
-
-/*
-const userWithTimeEntries = {
-  "id": 1,
-  "userName": "kirstine",
-  "fullName": "Kirstine Hall",
-  "timeEntries": [
-    {
-      "id": 1,
-      "startDateTime": "2025-08-01T09:00:00",
-      "endDateTime": "2025-08-01T17:00:00",
-      "projectCode": "BPC.001",
-      "userID": 1,
-      "projectDescription": "Berkshire Primary Care 001",
-      "segmentTypeName": "Meeting"
-    },
-    {
-      "id": 2,
-      "startDateTime": "2025-08-02T09:00:00",
-      "endDateTime": "2025-08-02T13:00:00",
-      "projectCode": "BPC.001",
-      "userID": 1,
-      "projectDescription": "Berkshire Primary Care 001",
-      "segmentTypeName": "Calls"
-    },
-    {
-      "id": 3,
-      "startDateTime": "2025-08-02T13:00:00",
-      "endDateTime": "2025-08-02T15:00:00",
-      "projectCode": "BP",
-      "userID": 1,
-      "projectDescription": "ARRS",
-      "segmentTypeName": "Planning"
-    },
-    {
-      "id": 4,
-      "startDateTime": "2025-10-01T09:00:00",
-      "endDateTime": "2025-10-01T17:00:00",
-      "projectCode": "BPC.001",
-      "userID": 1,
-      "projectDescription": "Berkshire Primary Care 001",
-      "segmentTypeName": "Meeting"
-    }
-  ]
-};
-*/
 
 const TimeEntriesList = ({ selectedDate, viewMode = 'day', weekStart = null, weekEnd = null, monthStart = null, monthEnd = null }) => {
-  const { currentUserId } = useUser();
+  const { currentUserId, makeAuthenticatedRequest } = useUser();
   const [timeEntries, setTimeEntries] = useState([]);
   const [projects, setProjects] = useState([]);
   const [segmentTypes, setSegmentTypes] = useState([]);
@@ -101,7 +45,7 @@ const TimeEntriesList = ({ selectedDate, viewMode = 'day', weekStart = null, wee
       const startParam = startDateTime.toISOString();
       const endParam = endDateTime.toISOString();
       
-      const response = await fetch(
+      const response = await makeAuthenticatedRequest(
         `${import.meta.env.VITE_API_BASE_URL}/api/users/${currentUserId}/timeentries?startDateTime=${encodeURIComponent(startParam)}&endDateTime=${encodeURIComponent(endParam)}`
       );
       
@@ -121,7 +65,7 @@ const TimeEntriesList = ({ selectedDate, viewMode = 'day', weekStart = null, wee
 
   const fetchProjects = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/${currentUserId}/projects`);
+      const response = await makeAuthenticatedRequest(`${import.meta.env.VITE_API_BASE_URL}/api/users/${currentUserId}/projects`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -134,7 +78,7 @@ const TimeEntriesList = ({ selectedDate, viewMode = 'day', weekStart = null, wee
 
   const fetchSegmentTypes = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/${currentUserId}/segmenttypes`);
+      const response = await makeAuthenticatedRequest(`${import.meta.env.VITE_API_BASE_URL}/api/users/${currentUserId}/segmenttypes`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }

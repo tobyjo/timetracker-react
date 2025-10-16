@@ -12,7 +12,9 @@ createRoot(document.getElementById('root')).render(
       domain="dev-isdsnzl58pgmx3kw.us.auth0.com"
       clientId="5GAiTgREXXzepDRVk7QfRXr4ffPZ5r25"
       authorizationParams={{
-        redirect_uri: window.location.origin
+        redirect_uri: window.location.origin,
+        audience: "timetracker", // Your API identifier
+        scope: "openid profile email read:timeentries write:timeentries read:projects write:projects read:segments write:segments"
       }}
     >
     <App />

@@ -3,7 +3,7 @@ import { Container, Card, Row, Col, Form, Button, Spinner, OverlayTrigger, Toolt
 import { useUser } from '../contexts/UserContext';
 
 const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekEnd = null, monthStart = null, monthEnd = null, onEntryAdded }) => {
-  const { currentUserId } = useUser();
+  const { currentUserId, makeAuthenticatedRequest } = useUser();
   
   // Helper function to format date as YYYY-MM-DD without timezone conversion
   const formatDateLocal = (date) => {
@@ -162,7 +162,7 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
     try {
       setLoadingProjects(true);
       setProjectsError(null);
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/${currentUserId}/projects`);
+      const response = await makeAuthenticatedRequest(`${import.meta.env.VITE_API_BASE_URL}/api/users/${currentUserId}/projects`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -190,7 +190,7 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
     try {
       setLoadingSegmentTypes(true);
       setSegmentTypesError(null);
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/${currentUserId}/segmenttypes`);
+      const response = await makeAuthenticatedRequest(`${import.meta.env.VITE_API_BASE_URL}/api/users/${currentUserId}/segmenttypes`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -287,11 +287,8 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
         EndDateTime: formatLocalDateTime(endDateTime)
       };
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/${currentUserId}/timeentries`, {
+      const response = await makeAuthenticatedRequest(`${import.meta.env.VITE_API_BASE_URL}/api/users/${currentUserId}/timeentries`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(requestBody)
       });
 

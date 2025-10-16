@@ -3,7 +3,7 @@ import { Form, Button, Spinner } from 'react-bootstrap';
 import { useUser } from '../contexts/UserContext';
 
 const TimeEntryRow = ({ timeEntry, projects = [], segmentTypes = [], viewMode = 'day', onEntryUpdated, onEntryDeleted }) => {
-  const { currentUserId } = useUser();
+  const { currentUserId, makeAuthenticatedRequest } = useUser();
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -134,11 +134,8 @@ const TimeEntryRow = ({ timeEntry, projects = [], segmentTypes = [], viewMode = 
         EndDateTime: formatLocalDateTime(endDateTime)
       };
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/${currentUserId}/timeentries/${timeEntry.id}`, {
+      const response = await makeAuthenticatedRequest(`${import.meta.env.VITE_API_BASE_URL}/api/users/${currentUserId}/timeentries/${timeEntry.id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(requestBody)
       });
 
@@ -168,7 +165,7 @@ const TimeEntryRow = ({ timeEntry, projects = [], segmentTypes = [], viewMode = 
       setIsDeleting(true);
       setError(null);
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/${currentUserId}/timeentries/${timeEntry.id}`, {
+      const response = await makeAuthenticatedRequest(`${import.meta.env.VITE_API_BASE_URL}/api/users/${currentUserId}/timeentries/${timeEntry.id}`, {
         method: 'DELETE'
       });
 
