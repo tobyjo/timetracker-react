@@ -134,7 +134,7 @@ const TimeEntryRow = ({ timeEntry, projects = [], segmentTypes = [], viewMode = 
         EndDateTime: formatLocalDateTime(endDateTime)
       };
 
-      const response = await makeAuthenticatedRequest(`${import.meta.env.VITE_API_BASE_URL}/api/users/${currentUserId}/timeentries/${timeEntry.id}`, {
+      const response = await makeAuthenticatedRequest(`${import.meta.env.VITE_API_BASE_URL}/api/me/timeentries/${timeEntry.id}`, {
         method: 'PUT',
         body: JSON.stringify(requestBody)
       });
@@ -165,7 +165,7 @@ const TimeEntryRow = ({ timeEntry, projects = [], segmentTypes = [], viewMode = 
       setIsDeleting(true);
       setError(null);
 
-      const response = await makeAuthenticatedRequest(`${import.meta.env.VITE_API_BASE_URL}/api/users/${currentUserId}/timeentries/${timeEntry.id}`, {
+      const response = await makeAuthenticatedRequest(`${import.meta.env.VITE_API_BASE_URL}/api/me/timeentries/${timeEntry.id}`, {
         method: 'DELETE'
       });
 

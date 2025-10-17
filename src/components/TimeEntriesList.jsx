@@ -46,7 +46,7 @@ const TimeEntriesList = ({ selectedDate, viewMode = 'day', weekStart = null, wee
       const endParam = endDateTime.toISOString();
       
       const response = await makeAuthenticatedRequest(
-        `${import.meta.env.VITE_API_BASE_URL}/api/users/${currentUserId}/timeentries?startDateTime=${encodeURIComponent(startParam)}&endDateTime=${encodeURIComponent(endParam)}`
+        `${import.meta.env.VITE_API_BASE_URL}/api/me/timeentries?startDateTime=${encodeURIComponent(startParam)}&endDateTime=${encodeURIComponent(endParam)}`
       );
       
       if (!response.ok) {
@@ -65,7 +65,7 @@ const TimeEntriesList = ({ selectedDate, viewMode = 'day', weekStart = null, wee
 
   const fetchProjects = async () => {
     try {
-      const response = await makeAuthenticatedRequest(`${import.meta.env.VITE_API_BASE_URL}/api/users/${currentUserId}/projects`);
+      const response = await makeAuthenticatedRequest(`${import.meta.env.VITE_API_BASE_URL}/api/me/projects`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -78,7 +78,7 @@ const TimeEntriesList = ({ selectedDate, viewMode = 'day', weekStart = null, wee
 
   const fetchSegmentTypes = async () => {
     try {
-      const response = await makeAuthenticatedRequest(`${import.meta.env.VITE_API_BASE_URL}/api/users/${currentUserId}/segmenttypes`);
+      const response = await makeAuthenticatedRequest(`${import.meta.env.VITE_API_BASE_URL}/api/me/segmenttypes`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }

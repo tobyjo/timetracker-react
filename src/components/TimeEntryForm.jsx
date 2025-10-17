@@ -162,7 +162,7 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
     try {
       setLoadingProjects(true);
       setProjectsError(null);
-      const response = await makeAuthenticatedRequest(`${import.meta.env.VITE_API_BASE_URL}/api/users/${currentUserId}/projects`);
+      const response = await makeAuthenticatedRequest(`${import.meta.env.VITE_API_BASE_URL}/api/me/projects`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -190,7 +190,7 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
     try {
       setLoadingSegmentTypes(true);
       setSegmentTypesError(null);
-      const response = await makeAuthenticatedRequest(`${import.meta.env.VITE_API_BASE_URL}/api/users/${currentUserId}/segmenttypes`);
+      const response = await makeAuthenticatedRequest(`${import.meta.env.VITE_API_BASE_URL}/api/me/segmenttypes`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -287,7 +287,7 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
         EndDateTime: formatLocalDateTime(endDateTime)
       };
 
-      const response = await makeAuthenticatedRequest(`${import.meta.env.VITE_API_BASE_URL}/api/users/${currentUserId}/timeentries`, {
+      const response = await makeAuthenticatedRequest(`${import.meta.env.VITE_API_BASE_URL}/api/me/timeentries`, {
         method: 'POST',
         body: JSON.stringify(requestBody)
       });
