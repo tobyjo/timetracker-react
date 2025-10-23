@@ -1,7 +1,10 @@
-import React from 'react';
-import { Container, Card, Row, Col, Button } from 'react-bootstrap';
+import React, { useState, useRef } from 'react';
+import { Container, Card, Row, Col, Button, Form } from 'react-bootstrap';
 
 const DayNavigation = ({ currentDate, onDateChange }) => {
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const dateInputRef = useRef(null);
+
   const handlePreviousDay = () => {
     const previousDay = new Date(currentDate);
     previousDay.setDate(previousDay.getDate() - 1);
@@ -16,6 +19,25 @@ const DayNavigation = ({ currentDate, onDateChange }) => {
 
   const handleToday = () => {
     onDateChange(new Date());
+  };
+
+  const handleDatePickerClick = () => {
+    if (dateInputRef.current) {
+      dateInputRef.current.focus();
+      dateInputRef.current.showPicker?.();
+    }
+  };
+
+  const handleDateChange = (e) => {
+    const selectedDate = new Date(e.target.value + 'T00:00:00');
+    onDateChange(selectedDate);
+  };
+
+  const formatDateForInput = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   const formatDateDisplay = (date) => {
@@ -57,6 +79,33 @@ const DayNavigation = ({ currentDate, onDateChange }) => {
           {/* Date Display */}
           <div className="text-center px-4">
             <h4 className="mb-0 fw-bold">{formatDateDisplay(currentDate)}</h4>
+          </div>
+
+          {/* Date Picker Button */}
+          <div className="position-relative">
+            <Button
+              variant="outline-primary"
+              size="sm"
+              onClick={handleDatePickerClick}
+              className="d-flex align-items-center"
+            >
+              <i className="bi bi-calendar3"></i>
+              <span className="d-none d-sm-inline ms-1">Pick Date</span>
+            </Button>
+            <Form.Control
+              ref={dateInputRef}
+              type="date"
+              value={formatDateForInput(currentDate)}
+              onChange={handleDateChange}
+              className="position-absolute opacity-0"
+              style={{ 
+                top: 0, 
+                left: 0, 
+                width: '100%', 
+                height: '100%', 
+                pointerEvents: 'none' 
+              }}
+            />
           </div>
 
           {/* Today Button */}
