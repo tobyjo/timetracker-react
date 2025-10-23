@@ -41,7 +41,8 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
     segment: '',
     selectedDate: '',
     startTime: '',
-    endTime: ''
+    endTime: '',
+    note: ''
   });
   
   // Flag to track navigation transitions and prevent validation flicker
@@ -284,7 +285,8 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
         ProjectId: parseInt(formData.project),
         SegmentTypeId: parseInt(formData.segment),
         StartDateTime: formatLocalDateTime(startDateTime),
-        EndDateTime: formatLocalDateTime(endDateTime)
+        EndDateTime: formatLocalDateTime(endDateTime),
+        Note: formData.note
       };
 
       const response = await makeAuthenticatedRequest(`${import.meta.env.VITE_API_BASE_URL}/api/me/timeentries`, {
@@ -304,7 +306,8 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
         segment: segmentTypes.length > 0 ? segmentTypes[0].id.toString() : '',
         selectedDate: prev.selectedDate, // Keep the same date
         startTime: '',
-        endTime: ''
+        endTime: '',
+        note: ''
       }));
 
       // Notify parent component to refresh the list
@@ -548,6 +551,32 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
                     {/* Reserved space for consistent alignment */}
                     <div style={{ height: '1.25rem' }}>
                       {/* Empty space to maintain layout consistency */}
+                    </div>
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              {/* Note Field - Second Row */}
+              <Row className="g-3">
+                <Col md={12}>
+                  <Form.Group>
+                    <Form.Label className="fw-medium text-muted small">
+                      Note (optional)
+                    </Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      name="note"
+                      value={formData.note}
+                      onChange={handleInputChange}
+                      placeholder="Add a note for this time entry..."
+                      rows={2}
+                      maxLength={300}
+                      disabled={isSubmitting}
+                      className="border"
+                    />
+                    <div className="d-flex justify-content-between mt-1">
+                      <small className="text-muted">Maximum 300 characters</small>
+                      <small className="text-muted">{formData.note.length}/300</small>
                     </div>
                   </Form.Group>
                 </Col>

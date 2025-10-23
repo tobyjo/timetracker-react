@@ -8,13 +8,15 @@ const TimeEntryRow = ({ timeEntry, projects = [], segmentTypes = [], viewMode = 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState(null);
+  const [showNotes, setShowNotes] = useState(false);
   
   // Extract initial values from timeEntry
   const [editData, setEditData] = useState({
     projectId: timeEntry.projectID ? timeEntry.projectID.toString() : '',
     segmentTypeId: timeEntry.segmentTypeID ? timeEntry.segmentTypeID.toString() : '', 
     startTime: extractTimeFromDateTime(timeEntry.startDateTime),
-    endTime: extractTimeFromDateTime(timeEntry.endDateTime)
+    endTime: extractTimeFromDateTime(timeEntry.endDateTime),
+    note: timeEntry.note || ''
   });
 
   // Update editData when timeEntry changes
@@ -23,7 +25,8 @@ const TimeEntryRow = ({ timeEntry, projects = [], segmentTypes = [], viewMode = 
       projectId: timeEntry.projectID ? timeEntry.projectID.toString() : '',
       segmentTypeId: timeEntry.segmentTypeID ? timeEntry.segmentTypeID.toString() : '', 
       startTime: extractTimeFromDateTime(timeEntry.startDateTime),
-      endTime: extractTimeFromDateTime(timeEntry.endDateTime)
+      endTime: extractTimeFromDateTime(timeEntry.endDateTime),
+      note: timeEntry.note || ''
     });
   }, [timeEntry]);
 
@@ -73,7 +76,8 @@ const TimeEntryRow = ({ timeEntry, projects = [], segmentTypes = [], viewMode = 
       projectId: timeEntry.projectID ? timeEntry.projectID.toString() : '',
       segmentTypeId: timeEntry.segmentTypeID ? timeEntry.segmentTypeID.toString() : '',
       startTime: extractTimeFromDateTime(timeEntry.startDateTime),
-      endTime: extractTimeFromDateTime(timeEntry.endDateTime)
+      endTime: extractTimeFromDateTime(timeEntry.endDateTime),
+      note: timeEntry.note || ''
     });
     setIsEditing(false);
     setError(null);
@@ -131,7 +135,8 @@ const TimeEntryRow = ({ timeEntry, projects = [], segmentTypes = [], viewMode = 
         ProjectId: parseInt(editData.projectId),
         SegmentTypeId: parseInt(editData.segmentTypeId),
         StartDateTime: formatLocalDateTime(startDateTime),
-        EndDateTime: formatLocalDateTime(endDateTime)
+        EndDateTime: formatLocalDateTime(endDateTime),
+        Note: editData.note
       };
 
       const response = await makeAuthenticatedRequest(`${import.meta.env.VITE_API_BASE_URL}/api/me/timeentries/${timeEntry.id}`, {
@@ -293,6 +298,28 @@ const TimeEntryRow = ({ timeEntry, projects = [], segmentTypes = [], viewMode = 
             </div>
           </td>
         </tr>
+        <tr className="table-warning">
+          <td colSpan={(viewMode === 'week' || viewMode === 'month') ? "6" : "5"} className="ps-4 pe-4 pb-3 pt-2">
+            <Form.Group>
+              <Form.Label className="small text-muted mb-1">Note (optional)</Form.Label>
+              <Form.Control
+                as="textarea"
+                name="note"
+                value={editData.note}
+                onChange={handleInputChange}
+                placeholder="Add a note for this time entry..."
+                rows={2}
+                maxLength={300}
+                disabled={isSubmitting}
+                className="border-0 bg-light"
+              />
+              <div className="d-flex justify-content-between mt-1">
+                <small className="text-muted">Maximum 300 characters</small>
+                <small className="text-muted">{editData.note.length}/300</small>
+              </div>
+            </Form.Group>
+          </td>
+        </tr>
         {error && (
           <tr>
             <td colSpan={(viewMode === 'week' || viewMode === 'month') ? "6" : "5"} className="p-2">
@@ -309,34 +336,63 @@ const TimeEntryRow = ({ timeEntry, projects = [], segmentTypes = [], viewMode = 
 
   // Display mode
   return (
-    <tr>
-      <td className="ps-4 fw-semibold">{timeEntry.projectCode}</td>
-      <td className="text-muted">{timeEntry.segmentTypeName}</td>
-      {(viewMode === 'week' || viewMode === 'month') && (
+    <>
+      <tr>
+        <td className="ps-4 fw-semibold">{timeEntry.projectCode}</td>
+        <td className="text-muted">{timeEntry.segmentTypeName}</td>
+        {(viewMode === 'week' || viewMode === 'month') && (
+          <td className="text-muted">
+            {new Date(timeEntry.startDateTime).toLocaleDateString('en-US', 
+              viewMode === 'month' 
+                ? { weekday: 'short', month: 'short', day: 'numeric' }
+                : { weekday: 'short', month: 'short', day: 'numeric' }
+            )}
+          </td>
+        )}
         <td className="text-muted">
-          {new Date(timeEntry.startDateTime).toLocaleDateString('en-US', 
-            viewMode === 'month' 
-              ? { weekday: 'short', month: 'short', day: 'numeric' }
-              : { weekday: 'short', month: 'short', day: 'numeric' }
-          )}
+          {new Date(timeEntry.startDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(timeEntry.endDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </td>
+        <td className="text-muted">
+          {calculateDuration(timeEntry.startDateTime, timeEntry.endDateTime)}
+        </td>
+        <td className="text-end pe-4">
+          <div className="d-flex gap-2 justify-content-end align-items-center">
+            {timeEntry.note && (
+              <Button
+                variant="link"
+                className="text-muted p-0"
+                onClick={() => setShowNotes(!showNotes)}
+                title={showNotes ? 'Hide note' : 'Show note'}
+                style={{ fontSize: '14px' }}
+              >
+                <i className={`bi bi-chat-text${showNotes ? '-fill' : ''}`}></i>
+              </Button>
+            )}
+            <Button
+              variant="link"
+              className="fw-semibold text-primary text-decoration-none p-0"
+              onClick={handleEdit}
+            >
+              Edit
+            </Button>
+          </div>
+        </td>
+      </tr>
+      {(showNotes && timeEntry.note) && (
+        <tr className="table-light">
+          <td colSpan={(viewMode === 'week' || viewMode === 'month') ? "6" : "5"} className="ps-4 pe-4 pb-2 pt-1">
+            <div className="d-flex align-items-start">
+              <small className="text-muted me-2 mt-1">
+                <i className="bi bi-chat-text"></i>
+              </small>
+              <small className="text-muted">
+                <strong>Note:</strong> {timeEntry.note}
+              </small>
+            </div>
+          </td>
+        </tr>
       )}
-      <td className="text-muted">
-        {new Date(timeEntry.startDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(timeEntry.endDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-      </td>
-      <td className="text-muted">
-        {calculateDuration(timeEntry.startDateTime, timeEntry.endDateTime)}
-      </td>
-      <td className="text-end pe-4">
-        <Button
-          variant="link"
-          className="fw-semibold text-primary text-decoration-none p-0"
-          onClick={handleEdit}
-        >
-          Edit
-        </Button>
-      </td>
-    </tr>
+    </>
   );
 };
 
