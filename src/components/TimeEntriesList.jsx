@@ -78,7 +78,7 @@ const TimeEntriesList = ({ selectedDate, viewMode = 'day', weekStart = null, wee
 
   const fetchSegmentTypes = async () => {
     try {
-      const response = await makeAuthenticatedRequest(`${import.meta.env.VITE_API_BASE_URL}/api/me/segmenttypes`);
+      const response = await makeAuthenticatedRequest(`${import.meta.env.VITE_API_BASE_URL}/api/me/segmenttypes?isVisible=true`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
