@@ -163,7 +163,7 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
     try {
       setLoadingProjects(true);
       setProjectsError(null);
-      const response = await makeAuthenticatedRequest(`${import.meta.env.VITE_API_BASE_URL}/api/me/projects`);
+      const response = await makeAuthenticatedRequest(`${import.meta.env.VITE_API_BASE_URL}/api/me/projects?isVisible=true`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
