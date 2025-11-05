@@ -34,6 +34,9 @@ const Navigation = () => {
             <LinkContainer to="/reports">
               <Nav.Link className="px-3 fw-medium">Reports</Nav.Link>
             </LinkContainer>
+            <LinkContainer to="/team-settings">
+              <Nav.Link className="px-3 fw-medium">Team Settings</Nav.Link>
+            </LinkContainer>
             <LinkContainer to="/settings">
               <Nav.Link className="px-3 fw-medium">Settings</Nav.Link>
             </LinkContainer>

@@ -5,6 +5,7 @@ import Navigation from './components/Navigation';
 import Dashboard from './components/Dashboard';
 import Reports from './components/Reports';
 import Settings from './components/Settings';
+import TeamSettings from './components/TeamSettings';
 import CurrentUser from './components/CurrentUser';
 import ErrorBoundary from './components/ErrorBoundary';
 import LandingPage from './components/LandingPage';
@@ -41,6 +42,7 @@ function App() {
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/reports" element={<Reports />} />
+                <Route path="/team-settings" element={<TeamSettings />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/user" element={<CurrentUser />} />
               </Routes>
