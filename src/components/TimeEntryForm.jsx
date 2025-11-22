@@ -88,8 +88,8 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
       return { isValid: true, message: '' };
     }
     
-    // Use the displayed date value (which is always defaultDate during navigation)
-    const dateToValidate = defaultDate;
+    // Use the selected date from the form
+    const dateToValidate = formData.selectedDate;
     if (!dateToValidate) {
       return { isValid: false, message: 'Date is required' };
     }
@@ -222,13 +222,12 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
     }
   }, [currentUserId]);
 
-  // Update date immediately when navigation changes to prevent validation flicker
+  // Initialize date when component mounts or when view/date context changes
+  // Only update if the date is empty or if we're changing view contexts
   useEffect(() => {
-    // Set navigation flag to suppress validation errors during transition
-    setIsNavigating(true);
-    
     setFormData(prev => {
-      if (prev.selectedDate !== defaultDate) {
+      // Only set the date if it's empty (initial load or after submit)
+      if (!prev.selectedDate) {
         return {
           ...prev,
           selectedDate: defaultDate
@@ -236,13 +235,6 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
       }
       return prev;
     });
-
-    // Clear navigation flag after a brief delay to allow state to update
-    const timer = setTimeout(() => {
-      setIsNavigating(false);
-    }, 50);
-
-    return () => clearTimeout(timer);
   }, [defaultDate]);
 
   const handleSubmit = async (e) => {
@@ -258,7 +250,7 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
 
       // Create datetime objects for the selected date with the form times
       // We need to create the date in local time and format it properly
-      const dateToUse = (viewMode === 'week' || viewMode === 'month') ? new Date(defaultDate) : selectedDate;
+      const dateToUse = (viewMode === 'week' || viewMode === 'month') ? new Date(formData.selectedDate) : selectedDate;
       const year = dateToUse.getFullYear();
       const month = dateToUse.getMonth();
       const day = dateToUse.getDate();
@@ -434,7 +426,7 @@ const TimeEntryForm = ({ selectedDate, viewMode = 'day', weekStart = null, weekE
                       <Form.Control
                         type="date"
                         name="selectedDate"
-                        value={defaultDate}
+                        value={formData.selectedDate}
                         onChange={handleInputChange}
                         size="lg"
                         min={viewMode === 'week' 
